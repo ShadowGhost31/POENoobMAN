@@ -86,12 +86,11 @@ public partial class SettingsWindow : Window
         LiveLevel.Text = st.Level.ToString();
         LivePoints.Text = engine.Points.ToString();
 
-        var steps = engine.GetSteps();
-        var items = steps.Current.Take(_app.Settings.Overlay.MaxHints)
-            .Select(s => new HintItem { Act = $"A{s.Act}", Text = s.Text }).ToList();
-        if (steps.Blocker is { } b && items.Count < _app.Settings.Overlay.MaxHints)
-            items.Add(new HintItem { Act = $"A{b.Act}", Text = $"Далі ({b.When}): {b.Text}", IsWaiting = true });
-        LiveSteps.ItemsSource = items;
+        var (route, hints) = HintBuilder.Build(engine, _app.Settings.Overlay.MaxHints);
+        if (route is not null)
+            hints.Insert(0, HintBuilder.Node("ЗАРАЗ", route.Title + (route.Next is { } n ? $"  → {n}" : ""), now: true));
+        LiveSteps.ItemsSource = hints;
+        LiveGuide.Text = $"{_app.CharacterLabel} · {view.Guide.Title} v{view.Guide.Version}";
 
         var nodes = engine.GetNodes();
         LiveNode.Text = nodes.Now.FirstOrDefault() is { } now ? $"Нода — взяти зараз: {now.Name}"

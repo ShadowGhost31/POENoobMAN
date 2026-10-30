@@ -1,12 +1,12 @@
 # Маршрут кампанії PoE 1 (патч 3.29), спільний для всіх гайдів (у гайді: route: campaign@3.29).
 #
 # Усе відмічається автоматично з Client.txt:
-#   крок зони   when.area: X, done.area: Z — з'являється при вході в X, закривається при вході в Z;
+#   крок зони   when.area: X, done.area: Z — з'являється при вході в X, закривається при вході в Z
+#               (або при переході в зону наступного кроку маршруту);
 #   квест       points: N — закривається рядком «You have received a Passive Skill Point»;
 #   лабіринт    done.ascendancy: 2/4/6 — коли взято очки асценду після Normal/Cruel/Merciless Lab.
-# Смерть босів гра в лог не пише, тому бос вважається вбитим при вході в зону, яку він відкриває
-# (Merveil → The Southern Forest, Dominus → The Aqueduct, Kitava → Lioneye's Watch A6 тощо).
-# Тексти — короткий власний опис кампанії; гайди білдів додають свої кроки через after:.
+# Оверлей сам показує назву зони (з when.area) і стрілку «→ далі» (з done.area), тому text — лише дія.
+# Смерть босів гра в лог не пише, тому бос вважається вбитим при вході в зону, яку він відкриває.
 
 id: campaign
 version: "3.29"
@@ -16,853 +16,243 @@ timerStart: { area: "1_1_1" }
 
 steps:
   # ===================== ACT 1 =====================
-  - id: a1_strand
-    act: 1
-    when: { area: "1_1_1" }
-    done: { area: "1_1_town" }
-    text: "Twilight Strand: вбийте Hillock → Lioneye's Watch"
-  - id: a1_town
-    act: 1
-    when: { area: "1_1_town" }
-    done: { area: "1_1_2" }
-    text: "Lioneye's Watch: гем від Tarkleigh, магазин Nessa → The Coast"
-  - id: a1_coast
-    act: 1
-    when: { area: "1_1_2" }
-    done: { area: "1_1_3" }
-    text: "The Coast: WP; Tidal Island — Hailrake (Medicine Chest) → The Mud Flats"
-  - id: a1_mudflats
-    act: 1
-    when: { area: "1_1_3" }
-    done: { area: "1_1_4_1" }
-    text: "Mud Flats: 3 гнізда Rhoa (Glyphs) → Submerged Passage"
-  - id: a1_submerged
-    act: 1
-    when: { area: "1_1_4_1" }
-    done: { area: "1_1_5" }
-    text: "Submerged Passage: WP; Flooded Depths — Dweller of the Deep → The Ledge"
-  - id: q1_dweller
-    act: 1
-    when: { area: "1_1_4_0" }
-    points: 1
-    text: "Нагорода: книга за Dweller у Tarkleigh (+1)"
-  - id: a1_ledge
-    act: 1
-    when: { area: "1_1_5" }
-    done: { area: "1_1_6" }
-    text: "The Ledge → The Climb"
-  - id: a1_climb
-    act: 1
-    when: { area: "1_1_6" }
-    done: { area: "1_1_7_1" }
-    text: "The Climb → The Lower Prison"
-  - id: a1_lower
-    act: 1
-    when: { area: "1_1_7_1" }
-    done: { area: "1_1_7_2" }
-    text: "Lower Prison: WP, Trial of Ascendancy → Upper Prison"
-  - id: a1_upper
-    act: 1
-    when: { area: "1_1_7_2" }
-    done: { area: "1_1_8" }
-    text: "Upper Prison: вбийте Brutus → Prisoner's Gate"
-  - id: a1_gate
-    act: 1
-    when: { area: "1_1_8" }
-    done: { area: "1_1_9" }
-    text: "Prisoner's Gate: WP → The Ship Graveyard"
-  - id: a1_graveyard
-    act: 1
-    when: { area: "1_1_9" }
-    done: { area: "1_1_11_1" }
-    text: "Ship Graveyard: Allflame у Ship Graveyard Cave, вбийте Fairgraves → Cavern of Wrath"
-  - id: q1_fairgraves
-    act: 1
-    when: { area: "1_1_9" }
-    points: 1
-    text: "Нагорода: книга за Fairgraves у Bestel (+1)"
-  - id: a1_wrath
-    act: 1
-    when: { area: "1_1_11_1" }
-    done: { area: "1_1_11_2" }
-    text: "Cavern of Wrath: WP → Cavern of Anger"
-  - id: a1_anger
-    act: 1
-    when: { area: "1_1_11_2" }
-    done: { area: "1_2_1" }
-    text: "Cavern of Anger: вбийте Merveil → The Southern Forest (Act 2)"
+  - { id: a1_strand, act: 1, when: { area: "1_1_1" }, done: { area: "1_1_town" }, text: "⚔ Hillock" }
+  - { id: a1_town, act: 1, when: { area: "1_1_town" }, done: { area: "1_1_2" }, text: "Tarkleigh — гем за Hillock · Nessa — магазин" }
+  - { id: a1_coast, act: 1, when: { area: "1_1_2" }, done: { area: "1_1_3" }, text: "Tidal Island: ⚔ Hailrake (Medicine Chest) · WP" }
+  - { id: a1_mudflats, act: 1, when: { area: "1_1_3" }, done: { area: "1_1_4_1" }, text: "3 гнізда Rhoa → Glyphs" }
+  - { id: a1_submerged, act: 1, when: { area: "1_1_4_1" }, done: { area: "1_1_5" }, text: "Flooded Depths: ⚔ Dweller of the Deep · WP" }
+  - { id: q1_dweller, act: 1, when: { area: "1_1_4_0" }, points: 1, text: "книга за Dweller — Tarkleigh" }
+  - { id: a1_ledge, act: 1, when: { area: "1_1_5" }, done: { area: "1_1_6" }, text: "біжіть далі" }
+  - { id: a1_climb, act: 1, when: { area: "1_1_6" }, done: { area: "1_1_7_1" }, text: "біжіть далі" }
+  - { id: a1_lower, act: 1, when: { area: "1_1_7_1" }, done: { area: "1_1_7_2" }, text: "Trial of Ascendancy · WP" }
+  - { id: a1_upper, act: 1, when: { area: "1_1_7_2" }, done: { area: "1_1_8" }, text: "⚔ Brutus" }
+  - { id: a1_gate, act: 1, when: { area: "1_1_8" }, done: { area: "1_1_9" }, text: "візьміть WP" }
+  - { id: a1_graveyard, act: 1, when: { area: "1_1_9" }, done: { area: "1_1_11_1" }, text: "Allflame у Ship Graveyard Cave · ⚔ Fairgraves" }
+  - { id: q1_fairgraves, act: 1, when: { area: "1_1_9" }, points: 1, text: "книга за Fairgraves — Bestel" }
+  - { id: a1_wrath, act: 1, when: { area: "1_1_11_1" }, done: { area: "1_1_11_2" }, text: "візьміть WP" }
+  - { id: a1_anger, act: 1, when: { area: "1_1_11_2" }, done: { area: "1_2_1" }, text: "⚔ Merveil" }
 
   # ===================== ACT 2 =====================
-  - id: a2_southern
-    act: 2
-    when: { area: "1_2_1" }
-    done: { area: "1_2_town" }
-    text: "Southern Forest → Forest Encampment"
-  - id: a2_town
-    act: 2
-    when: { area: "1_2_town" }
-    done: { area: "1_2_2" }
-    text: "Forest Encampment: WP → The Old Fields"
-  - id: a2_oldfields
-    act: 2
-    when: { area: "1_2_2" }
-    done: { area: "1_2_3" }
-    text: "Old Fields: (опц.) The Den — Great White Beast → The Crossroads"
-  - id: a2_crossroads
-    act: 2
-    when: { area: "1_2_3" }
-    done: { area: "1_2_6_1" }
-    text: "Crossroads: WP → Chamber of Sins"
-  - id: a2_sins1
-    act: 2
-    when: { area: "1_2_6_1" }
-    done: { area: "1_2_6_2" }
-    text: "Chamber of Sins 1: WP → Level 2"
-  - id: a2_sins2
-    act: 2
-    when: { area: "1_2_6_2" }
-    done: { area: "1_2_4" }
-    text: "Chamber of Sins 2: Trial, вбийте Fidelitas (Baleful Gem) → WP Crossroads → Broken Bridge"
-  - id: a2_bridge
-    act: 2
-    when: { area: "1_2_4" }
-    done: { area: "1_2_15" }
-    text: "Broken Bridge: бандит Kraityn → Crossroads → Fellshrine Ruins"
-  - id: a2_fellshrine
-    act: 2
-    when: { area: "1_2_15" }
-    done: { area: "1_2_5_1" }
-    text: "Fellshrine Ruins → The Crypt"
-  - id: a2_crypt
-    act: 2
-    when: { area: "1_2_5_1" }
-    done: { area: "1_2_7" }
-    text: "Crypt: Trial, Golden Hand → WP Crossroads → The Riverways"
-  - id: q2_sacred
-    act: 2
-    when: { area: "1_2_5_1" }
-    points: 1
-    text: "Нагорода: Golden Hand → Yeena (+1)"
-  - id: a2_riverways
-    act: 2
-    when: { area: "1_2_7" }
-    done: { area: "1_2_9" }
-    text: "Riverways: WP → The Western Forest"
-  - id: a2_western
-    act: 2
-    when: { area: "1_2_9" }
-    done: { area: "1_2_10" }
-    text: "Western Forest: бандит Alira, Thaumetic Seal (Blackguards) → Weaver's Chambers"
-  - id: q2_wayforward
-    act: 2
-    when: { area: "1_2_9" }
-    points: 1
-    text: "Нагорода: The Way Forward — Bestel у Lioneye's Watch (+1)"
-  - id: a2_weaver
-    act: 2
-    when: { area: "1_2_10" }
-    done: { area: "1_2_12" }
-    text: "Weaver's Chambers: вбийте Weaver (Maligaro's Spike) → Riverways → The Wetlands"
-  - id: a2_wetlands
-    act: 2
-    when: { area: "1_2_12" }
-    done: { area: "1_2_11" }
-    text: "Wetlands: бандит Oak → Vaal Ruins"
-  - id: a2_vaal
-    act: 2
-    when: { area: "1_2_11" }
-    done: { area: "1_2_8" }
-    text: "Vaal Ruins: печатка → The Northern Forest"
-  - id: a2_northern
-    act: 2
-    when: { area: "1_2_8" }
-    done: { area: "1_2_14_2" }
-    text: "Northern Forest: WP → The Caverns"
-  - id: a2_caverns
-    act: 2
-    when: { area: "1_2_14_2" }
-    done: { area: "1_2_14_3" }
-    text: "The Caverns: WP → Ancient Pyramid"
-  - id: a2_pyramid
-    act: 2
-    when: { area: "1_2_14_3" }
-    done: { area: "1_3_1" }
-    text: "Ancient Pyramid: вбийте Vaal Oversoul → City of Sarn (Act 3)"
+  - { id: a2_southern, act: 2, when: { area: "1_2_1" }, done: { area: "1_2_town" }, text: "біжіть до табору" }
+  - { id: a2_town, act: 2, when: { area: "1_2_town" }, done: { area: "1_2_2" }, text: "візьміть WP" }
+  - { id: a2_oldfields, act: 2, when: { area: "1_2_2" }, done: { area: "1_2_3" }, text: "(опц.) The Den — Great White Beast" }
+  - { id: a2_crossroads, act: 2, when: { area: "1_2_3" }, done: { area: "1_2_6_1" }, text: "візьміть WP" }
+  - { id: a2_sins1, act: 2, when: { area: "1_2_6_1" }, done: { area: "1_2_6_2" }, text: "візьміть WP" }
+  - { id: a2_sins2, act: 2, when: { area: "1_2_6_2" }, done: { area: "1_2_4" }, text: "Trial · ⚔ Fidelitas (Baleful Gem) · WP у Crossroads" }
+  - { id: a2_bridge, act: 2, when: { area: "1_2_4" }, done: { area: "1_2_15" }, text: "бандит Kraityn · назад у Crossroads" }
+  - { id: a2_fellshrine, act: 2, when: { area: "1_2_15" }, done: { area: "1_2_5_1" }, text: "біжіть до склепу" }
+  - { id: a2_crypt, act: 2, when: { area: "1_2_5_1" }, done: { area: "1_2_7" }, text: "Trial · Golden Hand · WP у Crossroads" }
+  - { id: q2_sacred, act: 2, when: { area: "1_2_5_1" }, points: 1, text: "Golden Hand — Yeena" }
+  - { id: a2_riverways, act: 2, when: { area: "1_2_7" }, done: { area: "1_2_9" }, text: "візьміть WP" }
+  - { id: a2_western, act: 2, when: { area: "1_2_9" }, done: { area: "1_2_10" }, text: "бандит Alira · Thaumetic Seal (Blackguards)" }
+  - { id: q2_wayforward, act: 2, when: { area: "1_2_9" }, points: 1, text: "The Way Forward — Bestel (Act 1)" }
+  - { id: a2_weaver, act: 2, when: { area: "1_2_10" }, done: { area: "1_2_12" }, text: "⚔ Weaver (Maligaro's Spike) · через Riverways" }
+  - { id: a2_wetlands, act: 2, when: { area: "1_2_12" }, done: { area: "1_2_11" }, text: "бандит Oak" }
+  - { id: a2_vaal, act: 2, when: { area: "1_2_11" }, done: { area: "1_2_8" }, text: "печатка (Maligaro's Spike)" }
+  - { id: a2_northern, act: 2, when: { area: "1_2_8" }, done: { area: "1_2_14_2" }, text: "візьміть WP" }
+  - { id: a2_caverns, act: 2, when: { area: "1_2_14_2" }, done: { area: "1_2_14_3" }, text: "візьміть WP" }
+  - { id: a2_pyramid, act: 2, when: { area: "1_2_14_3" }, done: { area: "1_3_1" }, text: "⚔ Vaal Oversoul" }
 
   # ===================== ACT 3 =====================
-  - id: a3_city
-    act: 3
-    when: { area: "1_3_1" }
-    done: { area: "1_3_town" }
-    text: "City of Sarn: Clarissa → Sarn Encampment"
-  - id: a3_town
-    act: 3
-    when: { area: "1_3_town" }
-    done: { area: "1_3_2" }
-    text: "Sarn Encampment → The Slums"
-  - id: a3_slums
-    act: 3
-    when: { area: "1_3_2" }
-    done: { area: "1_3_3_1" }
-    text: "Slums → The Crematorium"
-  - id: a3_crematorium
-    act: 3
-    when: { area: "1_3_3_1" }
-    done: { area: "1_3_10_1" }
-    text: "Crematorium: WP, Trial, вбийте Tolman (браслет) → Slums → The Sewers"
-  - id: a3_sewers
-    act: 3
-    when: { area: "1_3_10_1" }
-    done: { area: "1_3_5" }
-    text: "Sewers: 3 бюсти Victario → The Marketplace"
-  - id: q3_victario
-    act: 3
-    when: { area: "1_3_10_1" }
-    points: 1
-    text: "Нагорода: бюсти → Hargan (+1)"
-  - id: a3_market
-    act: 3
-    when: { area: "1_3_5" }
-    done: { area: "1_3_7" }
-    text: "Marketplace: WP; Catacombs — Trial → The Battlefront"
-  - id: a3_battlefront
-    act: 3
-    when: { area: "1_3_7" }
-    done: { area: "1_3_8_1" }
-    text: "Battlefront: WP, Ribbon Spool; Docks — Thaumetic Sulphite → Solaris Temple"
-  - id: a3_solaris1
-    act: 3
-    when: { area: "1_3_8_1" }
-    done: { area: "1_3_8_2" }
-    text: "Solaris Temple 1 → Level 2"
-  - id: a3_solaris2
-    act: 3
-    when: { area: "1_3_8_2" }
-    done: { area: "1_3_13" }
-    text: "Solaris Temple 2: Lady Dialla → The Ebony Barracks"
-  - id: a3_barracks
-    act: 3
-    when: { area: "1_3_13" }
-    done: { area: "1_3_14_1" }
-    text: "Ebony Barracks: WP, вбийте General Gravicius → Lunaris Temple"
-  - id: a3_lunaris1
-    act: 3
-    when: { area: "1_3_14_1" }
-    done: { area: "1_3_14_2" }
-    text: "Lunaris Temple 1 → Level 2"
-  - id: a3_lunaris2
-    act: 3
-    when: { area: "1_3_14_2" }
-    done: { area: "1_3_15" }
-    text: "Lunaris Temple 2: вбийте Piety → Imperial Gardens"
-  - id: q3_piety
-    act: 3
-    when: { area: "1_3_14_2" }
-    points: 1
-    text: "Нагорода: Piety's Pets — Grigor (+1)"
-  - id: a3_gardens
-    act: 3
-    when: { area: "1_3_15" }
-    done: { area: "1_3_18_1" }
-    text: "Imperial Gardens: WP, Trial; (опц.) Library → Sceptre of God"
-  - id: lab_normal
-    act: 3
-    when: { step: a3_gardens }
-    done: { ascendancy: 2 }
-    optional: true
-    text: "Normal Labyrinth: Aspirant's Plaza у Sarn Encampment (6 тріалів A1–A3)"
-  - id: a3_sceptre
-    act: 3
-    when: { area: "1_3_18_1" }
-    done: { area: "1_3_18_2" }
-    text: "Sceptre of God → Upper Sceptre of God"
-  - id: a3_upper
-    act: 3
-    when: { area: "1_3_18_2" }
-    done: { area: "1_4_1" }
-    text: "Upper Sceptre of God: вбийте Dominus → The Aqueduct (Act 4)"
+  - { id: a3_city, act: 3, when: { area: "1_3_1" }, done: { area: "1_3_town" }, text: "Clarissa" }
+  - { id: a3_town, act: 3, when: { area: "1_3_town" }, done: { area: "1_3_2" }, text: "візьміть WP" }
+  - { id: a3_slums, act: 3, when: { area: "1_3_2" }, done: { area: "1_3_3_1" }, text: "біжіть до крематорію" }
+  - { id: a3_crematorium, act: 3, when: { area: "1_3_3_1" }, done: { area: "1_3_10_1" }, text: "Trial · ⚔ Tolman (браслет) · через Slums · WP" }
+  - { id: a3_sewers, act: 3, when: { area: "1_3_10_1" }, done: { area: "1_3_5" }, text: "3 бюсти Victario" }
+  - { id: q3_victario, act: 3, when: { area: "1_3_10_1" }, points: 1, text: "бюсти Victario — Hargan" }
+  - { id: a3_market, act: 3, when: { area: "1_3_5" }, done: { area: "1_3_7" }, text: "Catacombs: Trial · WP" }
+  - { id: a3_battlefront, act: 3, when: { area: "1_3_7" }, done: { area: "1_3_8_1" }, text: "Ribbon Spool · Docks: Thaumetic Sulphite · WP" }
+  - { id: a3_solaris1, act: 3, when: { area: "1_3_8_1" }, done: { area: "1_3_8_2" }, text: "біжіть на рівень 2" }
+  - { id: a3_solaris2, act: 3, when: { area: "1_3_8_2" }, done: { area: "1_3_13" }, text: "Lady Dialla" }
+  - { id: a3_barracks, act: 3, when: { area: "1_3_13" }, done: { area: "1_3_14_1" }, text: "⚔ General Gravicius · WP" }
+  - { id: a3_lunaris1, act: 3, when: { area: "1_3_14_1" }, done: { area: "1_3_14_2" }, text: "біжіть на рівень 2" }
+  - { id: a3_lunaris2, act: 3, when: { area: "1_3_14_2" }, done: { area: "1_3_15" }, text: "⚔ Piety" }
+  - { id: q3_piety, act: 3, when: { area: "1_3_14_2" }, points: 1, text: "Piety's Pets — Grigor" }
+  - { id: a3_gardens, act: 3, when: { area: "1_3_15" }, done: { area: "1_3_18_1" }, text: "Trial · (опц.) Library · WP" }
+  - { id: lab_normal, act: 3, when: { step: a3_gardens }, done: { ascendancy: 2 }, optional: true, text: "Normal Lab — Aspirant's Plaza у Sarn Encampment" }
+  - { id: a3_sceptre, act: 3, when: { area: "1_3_18_1" }, done: { area: "1_3_18_2" }, text: "біжіть нагору" }
+  - { id: a3_upper, act: 3, when: { area: "1_3_18_2" }, done: { area: "1_4_1" }, text: "⚔ Dominus" }
 
   # ===================== ACT 4 =====================
-  - id: a4_aqueduct
-    act: 4
-    when: { area: "1_4_1" }
-    done: { area: "1_4_town" }
-    text: "Aqueduct → Highgate"
-  - id: a4_town
-    act: 4
-    when: { area: "1_4_town" }
-    done: { area: "1_4_3_1" }
-    text: "Highgate: Dried Lake — вбийте Voll (Deshret's Banner) → The Mines"
-  - id: a4_mines1
-    act: 4
-    when: { area: "1_4_3_1" }
-    done: { area: "1_4_3_2" }
-    text: "Mines 1 → Level 2"
-  - id: a4_mines2
-    act: 4
-    when: { area: "1_4_3_2" }
-    done: { area: "1_4_3_3" }
-    text: "Mines 2: звільніть дух Deshret → Crystal Veins"
-  - id: q4_deshret
-    act: 4
-    when: { area: "1_4_3_2" }
-    points: 1
-    text: "Нагорода: дух Deshret (+1)"
-  - id: a4_veins
-    act: 4
-    when: { area: "1_4_3_3" }
-    done: { area: "1_4_4_1" }
-    text: "Crystal Veins: WP → Kaom's Dream"
-  - id: a4_kaomdream
-    act: 4
-    when: { area: "1_4_4_1" }
-    done: { area: "1_4_4_3" }
-    text: "Kaom's Dream → Kaom's Stronghold (бажано 32 рівень)"
-  - id: a4_kaom
-    act: 4
-    when: { area: "1_4_4_3" }
-    done: { area: "1_4_5_1" }
-    text: "Kaom's Stronghold: вбийте Kaom (Eye of Fury) → WP Crystal Veins → Daresso's Dream"
-  - id: a4_daressodream
-    act: 4
-    when: { area: "1_4_5_1" }
-    done: { area: "1_4_5_2" }
-    text: "Daresso's Dream → The Grand Arena"
-  - id: a4_arena
-    act: 4
-    when: { area: "1_4_5_2" }
-    done: { area: "1_4_6_1" }
-    text: "Grand Arena: вбийте Daresso (Eye of Desire) → Highgate → Belly of the Beast"
-  - id: a4_belly1
-    act: 4
-    when: { area: "1_4_6_1" }
-    done: { area: "1_4_6_2" }
-    text: "Belly of the Beast 1 → Level 2"
-  - id: a4_belly2
-    act: 4
-    when: { area: "1_4_6_2" }
-    done: { area: "1_4_6_3" }
-    text: "Belly of the Beast 2: Piety → The Harvest"
-  - id: a4_harvest
-    act: 4
-    when: { area: "1_4_6_3" }
-    done: { area: "1_4_7" }
-    text: "Harvest: 3 органи, вбийте Malachai → The Ascent"
-  - id: a4_ascent
-    act: 4
-    when: { area: "1_4_7" }
-    done: { area: "1_5_1" }
-    text: "The Ascent → Slave Pens (Act 5)"
+  - { id: a4_aqueduct, act: 4, when: { area: "1_4_1" }, done: { area: "1_4_town" }, text: "біжіть до Highgate" }
+  - { id: a4_town, act: 4, when: { area: "1_4_town" }, done: { area: "1_4_3_1" }, text: "Dried Lake: ⚔ Voll (Deshret's Banner)" }
+  - { id: a4_mines1, act: 4, when: { area: "1_4_3_1" }, done: { area: "1_4_3_2" }, text: "біжіть на рівень 2" }
+  - { id: a4_mines2, act: 4, when: { area: "1_4_3_2" }, done: { area: "1_4_3_3" }, text: "звільніть дух Deshret" }
+  - { id: q4_deshret, act: 4, when: { area: "1_4_3_2" }, points: 1, text: "дух Deshret" }
+  - { id: a4_veins, act: 4, when: { area: "1_4_3_3" }, done: { area: "1_4_4_1" }, text: "візьміть WP" }
+  - { id: a4_kaomdream, act: 4, when: { area: "1_4_4_1" }, done: { area: "1_4_4_3" }, text: "біжіть до фортеці" }
+  - { id: a4_kaom, act: 4, when: { area: "1_4_4_3" }, done: { area: "1_4_5_1" }, text: "⚔ Kaom (Eye of Fury) · WP у Crystal Veins" }
+  - { id: a4_daressodream, act: 4, when: { area: "1_4_5_1" }, done: { area: "1_4_5_2" }, text: "біжіть до арени" }
+  - { id: a4_arena, act: 4, when: { area: "1_4_5_2" }, done: { area: "1_4_6_1" }, text: "⚔ Daresso (Eye of Desire) · через Highgate" }
+  - { id: a4_belly1, act: 4, when: { area: "1_4_6_1" }, done: { area: "1_4_6_2" }, text: "біжіть на рівень 2" }
+  - { id: a4_belly2, act: 4, when: { area: "1_4_6_2" }, done: { area: "1_4_6_3" }, text: "Piety" }
+  - { id: a4_harvest, act: 4, when: { area: "1_4_6_3" }, done: { area: "1_4_7" }, text: "3 органи · ⚔ Malachai" }
+  - { id: a4_ascent, act: 4, when: { area: "1_4_7" }, done: { area: "1_5_1" }, text: "біжіть до Act 5" }
 
   # ===================== ACT 5 =====================
-  - id: a5_pens
-    act: 5
-    when: { area: "1_5_1" }
-    done: { area: "1_5_town" }
-    text: "Slave Pens: вбийте Overseer Krow → Overseer's Tower"
-  - id: a5_town
-    act: 5
-    when: { area: "1_5_town" }
-    done: { area: "1_5_2" }
-    text: "Overseer's Tower: Lani → The Control Blocks"
-  - id: a5_control
-    act: 5
-    when: { area: "1_5_2" }
-    done: { area: "1_5_3" }
-    text: "Control Blocks: Miasmeter, вбийте Justicar Casticus → Oriath Square"
-  - id: q5_science
-    act: 5
-    when: { area: "1_5_2" }
-    points: 1
-    text: "Нагорода: Miasmeter → Vilenta (+1)"
-  - id: a5_square
-    act: 5
-    when: { area: "1_5_3" }
-    done: { area: "1_5_4" }
-    text: "Oriath Square: WP → The Templar Courts"
-  - id: a5_courts
-    act: 5
-    when: { area: "1_5_4" }
-    done: { area: "1_5_5" }
-    text: "Templar Courts: WP → Chamber of Innocence"
-  - id: a5_innocence
-    act: 5
-    when: { area: "1_5_5" }
-    done: { area: "1_5_4b" }
-    text: "Chamber of Innocence: вбийте High Templar Avarius → Torched Courts"
-  - id: a5_torched
-    act: 5
-    when: { area: "1_5_4b" }
-    done: { area: "1_5_3b" }
-    text: "Torched Courts → The Ruined Square"
-  - id: a5_ruined
-    act: 5
-    when: { area: "1_5_3b" }
-    done: { area: "1_5_8" }
-    text: "Ruined Square: WP; Ossuary (Sign of Purity), Reliquary (3 Torments) → Cathedral Rooftop"
-  - id: q5_torments
-    act: 5
-    when: { area: "1_5_7" }
-    points: 1
-    text: "Нагорода: Kitava's Torments → Lani (+1)"
-  - id: a5_rooftop
-    act: 5
-    when: { area: "1_5_8" }
-    done: { area: "2_6_town" }
-    text: "Cathedral Rooftop: вбийте Kitava → Lioneye's Watch (Act 6)"
+  - { id: a5_pens, act: 5, when: { area: "1_5_1" }, done: { area: "1_5_town" }, text: "⚔ Overseer Krow" }
+  - { id: a5_town, act: 5, when: { area: "1_5_town" }, done: { area: "1_5_2" }, text: "Lani" }
+  - { id: a5_control, act: 5, when: { area: "1_5_2" }, done: { area: "1_5_3" }, text: "Miasmeter · ⚔ Justicar Casticus" }
+  - { id: q5_science, act: 5, when: { area: "1_5_2" }, points: 1, text: "Miasmeter — Vilenta" }
+  - { id: a5_square, act: 5, when: { area: "1_5_3" }, done: { area: "1_5_4" }, text: "візьміть WP" }
+  - { id: a5_courts, act: 5, when: { area: "1_5_4" }, done: { area: "1_5_5" }, text: "візьміть WP" }
+  - { id: a5_innocence, act: 5, when: { area: "1_5_5" }, done: { area: "1_5_4b" }, text: "⚔ High Templar Avarius" }
+  - { id: a5_torched, act: 5, when: { area: "1_5_4b" }, done: { area: "1_5_3b" }, text: "біжіть далі" }
+  - { id: a5_ruined, act: 5, when: { area: "1_5_3b" }, done: { area: "1_5_8" }, text: "Ossuary: Sign of Purity · Reliquary: 3 Torments · WP" }
+  - { id: q5_torments, act: 5, when: { area: "1_5_7" }, points: 1, text: "Kitava's Torments — Lani" }
+  - { id: a5_rooftop, act: 5, when: { area: "1_5_8" }, done: { area: "2_6_town" }, text: "⚔ Kitava" }
 
   # ===================== ACT 6 =====================
-  - id: a6_town
-    act: 6
-    when: { area: "2_6_town" }
-    done: { area: "2_6_1" }
-    text: "Lioneye's Watch → Twilight Strand"
-  - id: a6_strand
-    act: 6
-    when: { area: "2_6_1" }
-    done: { area: "2_6_2" }
-    text: "Twilight Strand: зачистіть пляж (Lily Roth) → The Coast"
-  - id: a6_coast
-    act: 6
-    when: { area: "2_6_2" }
-    done: { area: "2_6_4" }
-    text: "The Coast: WP → The Mud Flats"
-  - id: a6_mudflats
-    act: 6
-    when: { area: "2_6_4" }
-    done: { area: "2_6_5" }
-    text: "Mud Flats → Karui Fortress"
-  - id: a6_fortress
-    act: 6
-    when: { area: "2_6_5" }
-    done: { area: "2_6_6" }
-    text: "Karui Fortress: вбийте Tukohama → The Ridge"
-  - id: q6_tukohama
-    act: 6
-    when: { area: "2_6_5" }
-    points: 1
-    text: "Нагорода: The Father of War (+1)"
-  - id: a6_ridge
-    act: 6
-    when: { area: "2_6_6" }
-    done: { area: "2_6_7_1" }
-    text: "The Ridge: WP → Lower Prison"
-  - id: a6_lower
-    act: 6
-    when: { area: "2_6_7_1" }
-    done: { area: "2_6_7_2" }
-    text: "Lower Prison → Shavronne's Tower"
-  - id: a6_tower
-    act: 6
-    when: { area: "2_6_7_2" }
-    done: { area: "2_6_8" }
-    text: "Shavronne's Tower: Brutus і Shavronne → Prisoner's Gate"
-  - id: a6_gate
-    act: 6
-    when: { area: "2_6_8" }
-    done: { area: "2_6_9" }
-    text: "Prisoner's Gate: Trial, вбийте Abberath → Western Forest"
-  - id: q6_abberath
-    act: 6
-    when: { area: "2_6_8" }
-    points: 1
-    text: "Нагорода: The Cloven One (+1)"
-  - id: a6_western
-    act: 6
-    when: { area: "2_6_9" }
-    done: { area: "2_6_10" }
-    text: "Western Forest → The Riverways"
-  - id: a6_riverways
-    act: 6
-    when: { area: "2_6_10" }
-    done: { area: "2_6_11" }
-    text: "Riverways: WP → The Wetlands"
-  - id: a6_wetlands
-    act: 6
-    when: { area: "2_6_11" }
-    done: { area: "2_6_12" }
-    text: "Wetlands: вбийте Ryslatha → Southern Forest"
-  - id: q6_ryslatha
-    act: 6
-    when: { area: "2_6_11" }
-    points: 1
-    text: "Нагорода: The Puppet Mistress (+1)"
-  - id: a6_southern
-    act: 6
-    when: { area: "2_6_12" }
-    done: { area: "2_6_13" }
-    text: "Southern Forest → Cavern of Anger"
-  - id: a6_anger
-    act: 6
-    when: { area: "2_6_13" }
-    done: { area: "2_6_14" }
-    text: "Cavern of Anger → The Beacon"
-  - id: a6_beacon
-    act: 6
-    when: { area: "2_6_14" }
-    done: { area: "2_6_15" }
-    text: "Beacon: WP, запаліть маяк (портал для безпеки), Weylam → Brine King's Reef"
-  - id: a6_reef
-    act: 6
-    when: { area: "2_6_15" }
-    done: { area: "2_7_town" }
-    text: "Brine King's Reef: вбийте Tsoatha → Bridge Encampment (Act 7)"
+  - { id: a6_town, act: 6, when: { area: "2_6_town" }, done: { area: "2_6_1" }, text: "на пляж" }
+  - { id: a6_strand, act: 6, when: { area: "2_6_1" }, done: { area: "2_6_2" }, text: "зачистіть пляж (Lily Roth)" }
+  - { id: a6_coast, act: 6, when: { area: "2_6_2" }, done: { area: "2_6_4" }, text: "візьміть WP" }
+  - { id: a6_mudflats, act: 6, when: { area: "2_6_4" }, done: { area: "2_6_5" }, text: "біжіть до фортеці" }
+  - { id: a6_fortress, act: 6, when: { area: "2_6_5" }, done: { area: "2_6_6" }, text: "⚔ Tukohama" }
+  - { id: q6_tukohama, act: 6, when: { area: "2_6_5" }, points: 1, text: "The Father of War" }
+  - { id: a6_ridge, act: 6, when: { area: "2_6_6" }, done: { area: "2_6_7_1" }, text: "візьміть WP" }
+  - { id: a6_lower, act: 6, when: { area: "2_6_7_1" }, done: { area: "2_6_7_2" }, text: "біжіть до вежі" }
+  - { id: a6_tower, act: 6, when: { area: "2_6_7_2" }, done: { area: "2_6_8" }, text: "⚔ Brutus і Shavronne" }
+  - { id: a6_gate, act: 6, when: { area: "2_6_8" }, done: { area: "2_6_9" }, text: "Trial · ⚔ Abberath" }
+  - { id: q6_abberath, act: 6, when: { area: "2_6_8" }, points: 1, text: "The Cloven One" }
+  - { id: a6_western, act: 6, when: { area: "2_6_9" }, done: { area: "2_6_10" }, text: "біжіть далі" }
+  - { id: a6_riverways, act: 6, when: { area: "2_6_10" }, done: { area: "2_6_11" }, text: "візьміть WP" }
+  - { id: a6_wetlands, act: 6, when: { area: "2_6_11" }, done: { area: "2_6_12" }, text: "⚔ Ryslatha" }
+  - { id: q6_ryslatha, act: 6, when: { area: "2_6_11" }, points: 1, text: "The Puppet Mistress" }
+  - { id: a6_southern, act: 6, when: { area: "2_6_12" }, done: { area: "2_6_13" }, text: "біжіть далі" }
+  - { id: a6_anger, act: 6, when: { area: "2_6_13" }, done: { area: "2_6_14" }, text: "біжіть до маяка" }
+  - { id: a6_beacon, act: 6, when: { area: "2_6_14" }, done: { area: "2_6_15" }, text: "запаліть маяк (портал для безпеки) · Weylam · WP" }
+  - { id: a6_reef, act: 6, when: { area: "2_6_15" }, done: { area: "2_7_town" }, text: "⚔ Tsoatha" }
 
   # ===================== ACT 7 =====================
-  - id: a7_town
-    act: 7
-    when: { area: "2_7_town" }
-    done: { area: "2_7_1" }
-    text: "Bridge Encampment → The Broken Bridge"
-  - id: a7_bridge
-    act: 7
-    when: { area: "2_7_1" }
-    done: { area: "2_7_3" }
-    text: "Broken Bridge: Silver Locket → Crossroads → Fellshrine Ruins"
-  - id: a7_fellshrine
-    act: 7
-    when: { area: "2_7_3" }
-    done: { area: "2_7_4" }
-    text: "Fellshrine Ruins → The Crypt"
-  - id: a7_crypt
-    act: 7
-    when: { area: "2_7_4" }
-    done: { area: "2_7_5_1" }
-    text: "Crypt: Trial, Maligaro's Map → Chamber of Sins"
-  - id: a7_sins1
-    act: 7
-    when: { area: "2_7_5_1" }
-    done: { area: "2_7_5_map" }
-    text: "Chamber of Sins 1: WP, карта → Maligaro's Sanctum"
-  - id: a7_sanctum
-    act: 7
-    when: { area: "2_7_5_map" }
-    done: { area: "2_7_5_2" }
-    text: "Maligaro's Sanctum: вбийте Maligaro → Chamber of Sins 2"
-  - id: q7_maligaro
-    act: 7
-    when: { area: "2_7_5_map" }
-    points: 1
-    text: "Нагорода: The Master of a Million Faces (+1)"
-  - id: a7_sins2
-    act: 7
-    when: { area: "2_7_5_2" }
-    done: { area: "2_7_6" }
-    text: "Chamber of Sins 2: Trial → The Den"
-  - id: lab_cruel
-    act: 7
-    when: { step: a7_sins2 }
-    done: { ascendancy: 4 }
-    optional: true
-    text: "Cruel Labyrinth (тріали A6–A7)"
-  - id: a7_den
-    act: 7
-    when: { area: "2_7_6" }
-    done: { area: "2_7_7" }
-    text: "The Den → The Ashen Fields"
-  - id: a7_ashen
-    act: 7
-    when: { area: "2_7_7" }
-    done: { area: "2_7_8" }
-    text: "Ashen Fields: вбийте Gruthkul → Northern Forest"
-  - id: q7_gruthkul
-    act: 7
-    when: { area: "2_7_7" }
-    points: 1
-    text: "Нагорода: Queen of Despair (+1)"
-  - id: a7_northern
-    act: 7
-    when: { area: "2_7_8" }
-    done: { area: "2_7_9" }
-    text: "Northern Forest: WP → Dread Thicket"
-  - id: a7_dread
-    act: 7
-    when: { area: "2_7_9" }
-    done: { area: "2_7_10" }
-    text: "Dread Thicket: 7 світлячків, Greust, Obsidian Key → The Causeway"
-  - id: a7_causeway
-    act: 7
-    when: { area: "2_7_10" }
-    done: { area: "2_7_11" }
-    text: "Causeway: Kishara's Star → The Vaal City"
-  - id: q7_kishara
-    act: 7
-    when: { area: "2_7_10" }
-    points: 1
-    text: "Нагорода: Kishara's Star (+1)"
-  - id: a7_vaal
-    act: 7
-    when: { area: "2_7_11" }
-    done: { area: "2_7_12_1" }
-    text: "Vaal City: WP, Yeena → Temple of Decay"
-  - id: a7_temple1
-    act: 7
-    when: { area: "2_7_12_1" }
-    done: { area: "2_7_12_2" }
-    text: "Temple of Decay 1 → Level 2"
-  - id: a7_temple2
-    act: 7
-    when: { area: "2_7_12_2" }
-    done: { area: "2_8_1" }
-    text: "Temple of Decay 2: вбийте Arakaali → Sarn Ramparts (Act 8)"
+  - { id: a7_town, act: 7, when: { area: "2_7_town" }, done: { area: "2_7_1" }, text: "візьміть WP" }
+  - { id: a7_bridge, act: 7, when: { area: "2_7_1" }, done: { area: "2_7_3" }, text: "Silver Locket · через Crossroads" }
+  - { id: a7_fellshrine, act: 7, when: { area: "2_7_3" }, done: { area: "2_7_4" }, text: "біжіть до склепу" }
+  - { id: a7_crypt, act: 7, when: { area: "2_7_4" }, done: { area: "2_7_5_1" }, text: "Trial · Maligaro's Map" }
+  - { id: a7_sins1, act: 7, when: { area: "2_7_5_1" }, done: { area: "2_7_5_map" }, text: "карта в портал · WP" }
+  - { id: a7_sanctum, act: 7, when: { area: "2_7_5_map" }, done: { area: "2_7_5_2" }, text: "⚔ Maligaro" }
+  - { id: q7_maligaro, act: 7, when: { area: "2_7_5_map" }, points: 1, text: "The Master of a Million Faces" }
+  - { id: a7_sins2, act: 7, when: { area: "2_7_5_2" }, done: { area: "2_7_6" }, text: "Trial" }
+  - { id: lab_cruel, act: 7, when: { step: a7_sins2 }, done: { ascendancy: 4 }, optional: true, text: "Cruel Lab (тріали A6–A7)" }
+  - { id: a7_den, act: 7, when: { area: "2_7_6" }, done: { area: "2_7_7" }, text: "біжіть далі" }
+  - { id: a7_ashen, act: 7, when: { area: "2_7_7" }, done: { area: "2_7_8" }, text: "⚔ Gruthkul" }
+  - { id: q7_gruthkul, act: 7, when: { area: "2_7_7" }, points: 1, text: "Queen of Despair" }
+  - { id: a7_northern, act: 7, when: { area: "2_7_8" }, done: { area: "2_7_9" }, text: "візьміть WP" }
+  - { id: a7_dread, act: 7, when: { area: "2_7_9" }, done: { area: "2_7_10" }, text: "7 світлячків · ⚔ Greust · Obsidian Key" }
+  - { id: a7_causeway, act: 7, when: { area: "2_7_10" }, done: { area: "2_7_11" }, text: "Kishara's Star" }
+  - { id: q7_kishara, act: 7, when: { area: "2_7_10" }, points: 1, text: "Kishara's Star" }
+  - { id: a7_vaal, act: 7, when: { area: "2_7_11" }, done: { area: "2_7_12_1" }, text: "Yeena · WP" }
+  - { id: a7_temple1, act: 7, when: { area: "2_7_12_1" }, done: { area: "2_7_12_2" }, text: "біжіть на рівень 2" }
+  - { id: a7_temple2, act: 7, when: { area: "2_7_12_2" }, done: { area: "2_8_1" }, text: "⚔ Arakaali" }
 
   # ===================== ACT 8 =====================
-  - id: a8_ramparts
-    act: 8
-    when: { area: "2_8_1" }
-    done: { area: "2_8_town" }
-    text: "Sarn Ramparts → Sarn Encampment"
-  - id: a8_town
-    act: 8
-    when: { area: "2_8_town" }
-    done: { area: "2_8_2_1" }
-    text: "Sarn Encampment → The Toxic Conduits"
-  - id: a8_conduits
-    act: 8
-    when: { area: "2_8_2_1" }
-    done: { area: "2_8_2_2" }
-    text: "Toxic Conduits → Doedre's Cesspool"
-  - id: a8_cesspool
-    act: 8
-    when: { area: "2_8_2_2" }
-    done: { area: "2_8_3" }
-    text: "Doedre's Cesspool: вбийте Doedre → Grand Promenade"
-  - id: a8_promenade
-    act: 8
-    when: { area: "2_8_3" }
-    done: { area: "2_8_5" }
-    text: "Grand Promenade: WP → The Bath House"
-  - id: a8_bath
-    act: 8
-    when: { area: "2_8_5" }
-    done: { area: "2_8_4" }
-    text: "Bath House: Trial → The High Gardens"
-  - id: a8_gardens
-    act: 8
-    when: { area: "2_8_4" }
-    done: { area: "2_8_6" }
-    text: "High Gardens: вбийте Yugul → Lunaris Concourse"
-  - id: q8_yugul
-    act: 8
-    when: { area: "2_8_4" }
-    points: 1
-    text: "Нагорода: Reflection of Terror (+1)"
-  - id: a8_lunconc
-    act: 8
-    when: { area: "2_8_6" }
-    done: { area: "2_8_7_1_" }
-    text: "Lunaris Concourse: WP → Lunaris Temple"
-  - id: a8_lunaris1
-    act: 8
-    when: { area: "2_8_7_1_" }
-    done: { area: "2_8_7_2" }
-    text: "Lunaris Temple 1 → Level 2"
-  - id: a8_lunaris2
-    act: 8
-    when: { area: "2_8_7_2" }
-    done: { area: "2_8_8" }
-    text: "Lunaris Temple 2: вбийте Dawn, Lunaris Orb → The Quay"
-  - id: a8_quay
-    act: 8
-    when: { area: "2_8_8" }
-    done: { area: "2_8_9" }
-    text: "The Quay: Ankh of Eternity → The Grain Gate"
-  - id: q8_love
-    act: 8
-    when: { area: "2_8_8" }
-    points: 1
-    text: "Нагорода: Ankh → Clarissa (+1, Love is Dead)"
-  - id: a8_grain
-    act: 8
-    when: { area: "2_8_9" }
-    done: { area: "2_8_10" }
-    text: "Grain Gate: Gemling Legion → Imperial Fields"
-  - id: q8_gemling
-    act: 8
-    when: { area: "2_8_9" }
-    points: 1
-    text: "Нагорода: The Gemling Legion (+1)"
-  - id: a8_fields
-    act: 8
-    when: { area: "2_8_10" }
-    done: { area: "2_8_11" }
-    text: "Imperial Fields: WP → Solaris Concourse"
-  - id: a8_solconc
-    act: 8
-    when: { area: "2_8_11" }
-    done: { area: "2_8_12_1" }
-    text: "Solaris Concourse: WP → Solaris Temple"
-  - id: a8_solaris1
-    act: 8
-    when: { area: "2_8_12_1" }
-    done: { area: "2_8_12_2" }
-    text: "Solaris Temple 1 → Level 2"
-  - id: a8_solaris2
-    act: 8
-    when: { area: "2_8_12_2" }
-    done: { area: "2_8_13" }
-    text: "Solaris Temple 2: вбийте Dusk, Solaris Orb → The Harbour Bridge"
-  - id: a8_harbour
-    act: 8
-    when: { area: "2_8_13" }
-    done: { area: "2_9_1" }
-    text: "Harbour Bridge: вбийте Solaris і Lunaris → Blood Aqueduct (Act 9)"
+  - { id: a8_ramparts, act: 8, when: { area: "2_8_1" }, done: { area: "2_8_town" }, text: "біжіть до табору" }
+  - { id: a8_town, act: 8, when: { area: "2_8_town" }, done: { area: "2_8_2_1" }, text: "візьміть WP" }
+  - { id: a8_conduits, act: 8, when: { area: "2_8_2_1" }, done: { area: "2_8_2_2" }, text: "біжіть далі" }
+  - { id: a8_cesspool, act: 8, when: { area: "2_8_2_2" }, done: { area: "2_8_3" }, text: "⚔ Doedre" }
+  - { id: a8_promenade, act: 8, when: { area: "2_8_3" }, done: { area: "2_8_5" }, text: "візьміть WP" }
+  - { id: a8_bath, act: 8, when: { area: "2_8_5" }, done: { area: "2_8_4" }, text: "Trial" }
+  - { id: a8_gardens, act: 8, when: { area: "2_8_4" }, done: { area: "2_8_6" }, text: "⚔ Yugul" }
+  - { id: q8_yugul, act: 8, when: { area: "2_8_4" }, points: 1, text: "Reflection of Terror" }
+  - { id: a8_lunconc, act: 8, when: { area: "2_8_6" }, done: { area: "2_8_7_1_" }, text: "візьміть WP" }
+  - { id: a8_lunaris1, act: 8, when: { area: "2_8_7_1_" }, done: { area: "2_8_7_2" }, text: "біжіть на рівень 2" }
+  - { id: a8_lunaris2, act: 8, when: { area: "2_8_7_2" }, done: { area: "2_8_8" }, text: "⚔ Dawn · Lunaris Orb" }
+  - { id: a8_quay, act: 8, when: { area: "2_8_8" }, done: { area: "2_8_9" }, text: "Ankh of Eternity" }
+  - { id: q8_love, act: 8, when: { area: "2_8_8" }, points: 1, text: "Ankh — Clarissa (Love is Dead)" }
+  - { id: a8_grain, act: 8, when: { area: "2_8_9" }, done: { area: "2_8_10" }, text: "Gemling Legion" }
+  - { id: q8_gemling, act: 8, when: { area: "2_8_9" }, points: 1, text: "The Gemling Legion" }
+  - { id: a8_fields, act: 8, when: { area: "2_8_10" }, done: { area: "2_8_11" }, text: "візьміть WP" }
+  - { id: a8_solconc, act: 8, when: { area: "2_8_11" }, done: { area: "2_8_12_1" }, text: "візьміть WP" }
+  - { id: a8_solaris1, act: 8, when: { area: "2_8_12_1" }, done: { area: "2_8_12_2" }, text: "біжіть на рівень 2" }
+  - { id: a8_solaris2, act: 8, when: { area: "2_8_12_2" }, done: { area: "2_8_13" }, text: "⚔ Dusk · Solaris Orb" }
+  - { id: a8_harbour, act: 8, when: { area: "2_8_13" }, done: { area: "2_9_1" }, text: "⚔ Solaris і Lunaris" }
 
   # ===================== ACT 9 =====================
-  - id: a9_aqueduct
-    act: 9
-    when: { area: "2_9_1" }
-    done: { area: "2_9_town" }
-    text: "Blood Aqueduct → Highgate"
-  - id: a9_town
-    act: 9
-    when: { area: "2_9_town" }
-    done: { area: "2_9_2" }
-    text: "Highgate: Sin → The Descent"
-  - id: a9_descent
-    act: 9
-    when: { area: "2_9_2" }
-    done: { area: "2_9_3" }
-    text: "The Descent → Vastiri Desert"
-  - id: a9_desert
-    act: 9
-    when: { area: "2_9_3" }
-    done: { area: "2_9_4" }
-    text: "Vastiri Desert: WP, Storm Blade → The Oasis"
-  - id: a9_oasis
-    act: 9
-    when: { area: "2_9_4" }
-    done: { area: "2_9_5" }
-    text: "Oasis: вбийте Shakari → The Foothills"
-  - id: q9_shakari
-    act: 9
-    when: { area: "2_9_4" }
-    points: 1
-    text: "Нагорода: Queen of the Sands (+1)"
-  - id: a9_foothills
-    act: 9
-    when: { area: "2_9_5" }
-    done: { area: "2_9_6" }
-    text: "Foothills: WP → Boiling Lake"
-  - id: a9_lake
-    act: 9
-    when: { area: "2_9_6" }
-    done: { area: "2_9_7" }
-    text: "Boiling Lake: вбийте Basilisk (Basilisk Acid) → The Tunnel"
-  - id: a9_tunnel
-    act: 9
-    when: { area: "2_9_7" }
-    done: { area: "2_9_8" }
-    text: "The Tunnel: Trial → The Quarry"
-  - id: a9_quarry
-    act: 9
-    when: { area: "2_9_8" }
-    done: { area: "2_9_9" }
-    text: "Quarry: WP, вбийте Garukhan → The Refinery"
-  - id: q9_garukhan
-    act: 9
-    when: { area: "2_9_8" }
-    points: 1
-    text: "Нагорода: The Ruler of Highgate (+1)"
-  - id: a9_refinery
-    act: 9
-    when: { area: "2_9_9" }
-    done: { area: "2_9_10_1" }
-    text: "Refinery: вбийте General Adus (Trarthan Powder) → Highgate → Belly of the Beast"
-  - id: a9_belly
-    act: 9
-    when: { area: "2_9_10_1" }
-    done: { area: "2_9_10_2" }
-    text: "Belly of the Beast → The Rotting Core"
-  - id: a9_core
-    act: 9
-    when: { area: "2_9_10_2" }
-    done: { area: "2_10_town" }
-    text: "Rotting Core: вбийте Depraved Trinity → Oriath Docks (Act 10)"
+  - { id: a9_aqueduct, act: 9, when: { area: "2_9_1" }, done: { area: "2_9_town" }, text: "біжіть до Highgate" }
+  - { id: a9_town, act: 9, when: { area: "2_9_town" }, done: { area: "2_9_2" }, text: "Sin" }
+  - { id: a9_descent, act: 9, when: { area: "2_9_2" }, done: { area: "2_9_3" }, text: "біжіть вниз" }
+  - { id: a9_desert, act: 9, when: { area: "2_9_3" }, done: { area: "2_9_4" }, text: "Storm Blade · WP" }
+  - { id: a9_oasis, act: 9, when: { area: "2_9_4" }, done: { area: "2_9_5" }, text: "⚔ Shakari" }
+  - { id: q9_shakari, act: 9, when: { area: "2_9_4" }, points: 1, text: "Queen of the Sands" }
+  - { id: a9_foothills, act: 9, when: { area: "2_9_5" }, done: { area: "2_9_6" }, text: "візьміть WP" }
+  - { id: a9_lake, act: 9, when: { area: "2_9_6" }, done: { area: "2_9_7" }, text: "⚔ Basilisk (Basilisk Acid)" }
+  - { id: a9_tunnel, act: 9, when: { area: "2_9_7" }, done: { area: "2_9_8" }, text: "Trial" }
+  - { id: a9_quarry, act: 9, when: { area: "2_9_8" }, done: { area: "2_9_9" }, text: "⚔ Garukhan · WP" }
+  - { id: q9_garukhan, act: 9, when: { area: "2_9_8" }, points: 1, text: "The Ruler of Highgate" }
+  - { id: a9_refinery, act: 9, when: { area: "2_9_9" }, done: { area: "2_9_10_1" }, text: "⚔ General Adus (Trarthan Powder) · через Highgate" }
+  - { id: a9_belly, act: 9, when: { area: "2_9_10_1" }, done: { area: "2_9_10_2" }, text: "біжіть до ядра" }
+  - { id: a9_core, act: 9, when: { area: "2_9_10_2" }, done: { area: "2_10_town" }, text: "⚔ Depraved Trinity" }
 
   # ===================== ACT 10 =====================
-  - id: a10_town
-    act: 10
-    when: { area: "2_10_town" }
-    done: { area: "2_10_1" }
-    text: "Oriath Docks: Lani → Cathedral Rooftop"
-  - id: a10_rooftop
-    act: 10
-    when: { area: "2_10_1" }
-    done: { area: "2_10_2" }
-    text: "Cathedral Rooftop: вбийте Plaguewing, Bannon (Safe Passage) → Ravaged Square"
-  - id: a10_ravaged
-    act: 10
-    when: { area: "2_10_2" }
-    done: { area: "2_10_7" }
-    text: "Ravaged Square: WP; Control Blocks (Vilenta) і Torched Courts → Desecrated Chambers"
-  - id: a10_control
-    act: 10
-    when: { area: "2_10_7" }
-    done: { area: "2_10_3" }
-    text: "Control Blocks: вбийте Vilenta → Ravaged Square → Torched Courts"
-  - id: q10_vilenta
-    act: 10
-    when: { area: "2_10_7" }
-    points: 1
-    text: "Нагорода: Vilenta's Vengeance (+1)"
-  - id: a10_torched
-    act: 10
-    when: { area: "2_10_3" }
-    done: { area: "2_10_4" }
-    text: "Torched Courts → Desecrated Chambers"
-  - id: a10_chambers
-    act: 10
-    when: { area: "2_10_4" }
-    done: { area: "2_10_5" }
-    text: "Desecrated Chambers: вбийте Avarius (Death and Rebirth) → Ravaged Square → The Canals"
-  - id: a10_ossuary
-    act: 10
-    when: { area: "2_10_9" }
-    done: { area: "2_10_5" }
-    text: "Ossuary: Trial → The Canals"
-  - id: lab_merciless
-    act: 10
-    when: { step: a10_chambers }
-    done: { ascendancy: 6 }
-    optional: true
-    text: "Merciless Labyrinth (тріали A8–A10)"
-  - id: a10_canals
-    act: 10
-    when: { area: "2_10_5" }
-    done: { area: "2_10_6" }
-    text: "The Canals → The Feeding Trough"
-  - id: a10_trough
-    act: 10
-    when: { area: "2_10_6" }
-    done: { area: "2_11_endgame_town" }
-    text: "Feeding Trough: вбийте Kitava → Karui Shores"
-  - id: q10_kitava
-    act: 10
-    when: { area: "2_10_6" }
-    points: 2
-    text: "Нагорода: An End to Hunger (+2)"
+  - { id: a10_town, act: 10, when: { area: "2_10_town" }, done: { area: "2_10_1" }, text: "Lani" }
+  - { id: a10_rooftop, act: 10, when: { area: "2_10_1" }, done: { area: "2_10_2" }, text: "⚔ Plaguewing · Bannon (Safe Passage)" }
+  - { id: a10_ravaged, act: 10, when: { area: "2_10_2" }, done: { area: "2_10_7" }, text: "на південь · WP" }
+  - { id: a10_control, act: 10, when: { area: "2_10_7" }, done: { area: "2_10_3" }, text: "⚔ Vilenta · через Ravaged Square" }
+  - { id: q10_vilenta, act: 10, when: { area: "2_10_7" }, points: 1, text: "Vilenta's Vengeance" }
+  - { id: a10_torched, act: 10, when: { area: "2_10_3" }, done: { area: "2_10_4" }, text: "біжіть далі" }
+  - { id: a10_chambers, act: 10, when: { area: "2_10_4" }, done: { area: "2_10_5" }, text: "⚔ Avarius (Death and Rebirth) · через Ravaged Square" }
+  - { id: a10_ossuary, act: 10, when: { area: "2_10_9" }, done: { area: "2_10_5" }, text: "Trial" }
+  - { id: lab_merciless, act: 10, when: { step: a10_chambers }, done: { ascendancy: 6 }, optional: true, text: "Merciless Lab (тріали A8–A10)" }
+  - { id: a10_canals, act: 10, when: { area: "2_10_5" }, done: { area: "2_10_6" }, text: "біжіть далі" }
+  - { id: a10_trough, act: 10, when: { area: "2_10_6" }, done: { area: "2_11_endgame_town" }, text: "⚔ Kitava" }
+  - { id: q10_kitava, act: 10, when: { area: "2_10_6" }, points: 2, text: "An End to Hunger" }
 
+# ⚔ — бос (час — вхід у зону, яку він відкриває, або перехід у наступну зону маршруту),
+# → — прихід у ключову локацію, ★ — лабіринт.
 splits:
-  - { id: hillock, label: Hillock, on: { step: a1_strand } }
-  - { id: brutus, label: Brutus, on: { area: "1_1_8" } }
-  - { id: merveil, label: "Merveil (A1)", on: { area: "1_2_1" } }
-  - { id: fidelitas, label: Fidelitas, on: { step: a2_sins2 } }
-  - { id: weaver, label: Weaver, on: { step: a2_weaver } }
-  - { id: oversoul, label: "Vaal Oversoul (A2)", on: { area: "1_3_1" } }
-  - { id: gravicius, label: Gravicius, on: { step: a3_barracks } }
-  - { id: piety, label: Piety, on: { step: a3_lunaris2 } }
-  - { id: lab_normal, label: Normal Lab, on: { step: lab_normal } }
-  - { id: dominus, label: "Dominus (A3)", on: { area: "1_4_1" } }
-  - { id: kaom, label: Kaom, on: { step: a4_kaom } }
-  - { id: daresso, label: Daresso, on: { step: a4_arena } }
-  - { id: malachai, label: "Malachai (A4)", on: { step: a4_harvest } }
-  - { id: avarius, label: Avarius, on: { step: a5_innocence } }
-  - { id: kitava5, label: "Kitava (A5)", on: { area: "2_6_town" } }
-  - { id: tsoatha, label: "Brine King (A6)", on: { area: "2_7_town" } }
-  - { id: lab_cruel, label: Cruel Lab, on: { step: lab_cruel } }
-  - { id: arakaali, label: "Arakaali (A7)", on: { area: "2_8_1" } }
-  - { id: lunsol, label: "Solaris і Lunaris (A8)", on: { area: "2_9_1" } }
-  - { id: trinity, label: "Depraved Trinity (A9)", on: { area: "2_10_town" } }
-  - { id: lab_merciless, label: Merciless Lab, on: { step: lab_merciless } }
-  - { id: kitava10, label: "Kitava (A10)", on: { area: "2_11_endgame_town" } }
+  - { id: hillock, label: "⚔ Hillock", on: { step: a1_strand } }
+  - { id: z_coast, label: "→ The Coast", on: { area: "1_1_2" } }
+  - { id: z_submerged, label: "→ Submerged Passage", on: { area: "1_1_4_1" } }
+  - { id: z_prison, label: "→ Lower Prison", on: { area: "1_1_7_1" } }
+  - { id: brutus, label: "⚔ Brutus", on: { area: "1_1_8" } }
+  - { id: z_graveyard, label: "→ Ship Graveyard", on: { area: "1_1_9" } }
+  - { id: z_wrath, label: "→ Cavern of Wrath", on: { area: "1_1_11_1" } }
+  - { id: merveil, label: "⚔ Merveil · Act 2", on: { area: "1_2_1" } }
+  - { id: z_crossroads, label: "→ The Crossroads", on: { area: "1_2_3" } }
+  - { id: fidelitas, label: "⚔ Fidelitas", on: { step: a2_sins2 } }
+  - { id: z_western, label: "→ Western Forest", on: { area: "1_2_9" } }
+  - { id: weaver, label: "⚔ Weaver", on: { step: a2_weaver } }
+  - { id: z_vaal, label: "→ Vaal Ruins", on: { area: "1_2_11" } }
+  - { id: oversoul, label: "⚔ Vaal Oversoul · Act 3", on: { area: "1_3_1" } }
+  - { id: z_crematorium, label: "→ Crematorium", on: { area: "1_3_3_1" } }
+  - { id: z_market, label: "→ Marketplace", on: { area: "1_3_5" } }
+  - { id: z_solaris, label: "→ Solaris Temple", on: { area: "1_3_8_1" } }
+  - { id: gravicius, label: "⚔ Gravicius", on: { step: a3_barracks } }
+  - { id: piety, label: "⚔ Piety", on: { step: a3_lunaris2 } }
+  - { id: z_gardens, label: "→ Imperial Gardens", on: { area: "1_3_15" } }
+  - { id: lab_normal, label: "★ Normal Lab", on: { step: lab_normal } }
+  - { id: dominus, label: "⚔ Dominus · Act 4", on: { area: "1_4_1" } }
+  - { id: z_mines, label: "→ The Mines", on: { area: "1_4_3_1" } }
+  - { id: z_veins, label: "→ Crystal Veins", on: { area: "1_4_3_3" } }
+  - { id: kaom, label: "⚔ Kaom", on: { step: a4_kaom } }
+  - { id: daresso, label: "⚔ Daresso", on: { step: a4_arena } }
+  - { id: z_belly, label: "→ Belly of the Beast", on: { area: "1_4_6_1" } }
+  - { id: malachai, label: "⚔ Malachai · Act 5", on: { step: a4_harvest } }
+  - { id: z_overseer, label: "→ Overseer's Tower", on: { area: "1_5_town" } }
+  - { id: z_square, label: "→ Oriath Square", on: { area: "1_5_3" } }
+  - { id: avarius, label: "⚔ Avarius", on: { step: a5_innocence } }
+  - { id: z_ruined, label: "→ Ruined Square", on: { area: "1_5_3b" } }
+  - { id: kitava5, label: "⚔ Kitava · Act 6", on: { area: "2_6_town" } }
+  - { id: z_fortress, label: "→ Karui Fortress", on: { area: "2_6_5" } }
+  - { id: z_gate6, label: "→ Prisoner's Gate", on: { area: "2_6_8" } }
+  - { id: z_beacon, label: "→ The Beacon", on: { area: "2_6_14" } }
+  - { id: tsoatha, label: "⚔ Tsoatha · Act 7", on: { area: "2_7_town" } }
+  - { id: z_sins7, label: "→ Chamber of Sins", on: { area: "2_7_5_1" } }
+  - { id: z_ashen, label: "→ Ashen Fields", on: { area: "2_7_7" } }
+  - { id: z_dread, label: "→ Dread Thicket", on: { area: "2_7_9" } }
+  - { id: z_vaalcity, label: "→ Vaal City", on: { area: "2_7_11" } }
+  - { id: lab_cruel, label: "★ Cruel Lab", on: { step: lab_cruel } }
+  - { id: arakaali, label: "⚔ Arakaali · Act 8", on: { area: "2_8_1" } }
+  - { id: z_promenade, label: "→ Grand Promenade", on: { area: "2_8_3" } }
+  - { id: z_lunaris8, label: "→ Lunaris Concourse", on: { area: "2_8_6" } }
+  - { id: z_solaris8, label: "→ Solaris Concourse", on: { area: "2_8_11" } }
+  - { id: z_harbour, label: "→ Harbour Bridge", on: { area: "2_8_13" } }
+  - { id: lunsol, label: "⚔ Solaris і Lunaris · Act 9", on: { area: "2_9_1" } }
+  - { id: z_desert, label: "→ Vastiri Desert", on: { area: "2_9_3" } }
+  - { id: z_quarry, label: "→ The Quarry", on: { area: "2_9_8" } }
+  - { id: z_belly9, label: "→ Belly of the Beast", on: { area: "2_9_10_1" } }
+  - { id: trinity, label: "⚔ Depraved Trinity · Act 10", on: { area: "2_10_town" } }
+  - { id: z_ravaged, label: "→ Ravaged Square", on: { area: "2_10_2" } }
+  - { id: z_chambers, label: "→ Desecrated Chambers", on: { area: "2_10_4" } }
+  - { id: z_canals, label: "→ The Canals", on: { area: "2_10_5" } }
+  - { id: lab_merciless, label: "★ Merciless Lab", on: { step: lab_merciless } }
+  - { id: kitava10, label: "⚔ Kitava · Karui Shores", on: { area: "2_11_endgame_town" } }

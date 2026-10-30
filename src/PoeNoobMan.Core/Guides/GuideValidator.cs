@@ -26,6 +26,8 @@ public static class GuideValidator
             else if (!stepIds.Add(s.Id)) errors.Add($"{where}: повторюється id");
             if (string.IsNullOrWhiteSpace(s.Text)) errors.Add($"{where}: порожній text");
             if (s.Done is { IsEmpty: true }) errors.Add($"{where}: порожня умова done");
+            if (s.Kind is { } kind && !GuideStep.KnownKinds.Contains(kind.ToLowerInvariant()))
+                errors.Add($"{where}: невідомий kind '{kind}' (можна: {string.Join(", ", GuideStep.KnownKinds)})");
             CheckFilter(where, s.If, options, errors);
         }
 

@@ -3,38 +3,72 @@
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:local="clr-namespace:PoeNoobMan.App.Windows"
                          Title="PoE Noob Man — підказки">
-    <Border x:Name="Root" CornerRadius="6" Padding="10,6,10,8" BorderBrush="{StaticResource OverlayBorder}" BorderThickness="0.5">
+    <Border x:Name="Root" CornerRadius="8" Padding="12,8,12,10" BorderBrush="{StaticResource OverlayBorder}" BorderThickness="1"
+            Width="400" TextOptions.TextFormattingMode="Display">
         <Border.LayoutTransform>
             <ScaleTransform x:Name="Scale" ScaleX="1" ScaleY="1" />
         </Border.LayoutTransform>
-        <StackPanel MaxWidth="470" MinWidth="240">
-            <TextBlock x:Name="Header" Foreground="{StaticResource OverlayMuted}" FontSize="12" Margin="0,0,0,4" />
-            <ItemsControl x:Name="Hints">
+        <StackPanel>
+            <!-- Акт · зона · рівень -->
+            <DockPanel>
+                <TextBlock x:Name="Stats" DockPanel.Dock="Right" Foreground="{StaticResource OverlayMuted}" FontSize="12" VerticalAlignment="Center" />
+                <Border x:Name="ActChip" Background="{StaticResource OverlayAccent}" CornerRadius="3" Padding="5,0" Margin="0,0,7,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="ActText" Foreground="#2C2C2A" FontSize="11" FontWeight="Bold" />
+                </Border>
+                <TextBlock x:Name="ZoneName" Foreground="{StaticResource OverlayText}" FontSize="14" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </DockPanel>
+
+            <!-- Що зробити тут і куди далі -->
+            <Border x:Name="RouteBox" Margin="0,7,0,0" Padding="9,5,6,6" Background="#1FFFFFFF" BorderBrush="{StaticResource OverlayAccent}"
+                    BorderThickness="3,0,0,0">
+                <StackPanel>
+                    <TextBlock x:Name="RouteTitle" Foreground="{StaticResource OverlayText}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <ItemsControl x:Name="RouteExtra">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StringFormat='• {0}'}" Foreground="{StaticResource OverlayMuted}" FontSize="12.5" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="RouteNext" Foreground="{StaticResource OverlayAccent}" FontSize="13.5" FontWeight="SemiBold" Margin="0,3,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Підказки білда -->
+            <ItemsControl x:Name="Hints" Margin="0,4,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel Margin="0,2">
-                            <Border DockPanel.Dock="Left" Background="{StaticResource ChipBg}" CornerRadius="3" Padding="4,0" Margin="0,1,6,0" VerticalAlignment="Top">
-                                <TextBlock Text="{Binding Act}" Foreground="{StaticResource OverlayMuted}" FontSize="11" />
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="84" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="4,1" Margin="0,1,6,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding Chip}" Foreground="{Binding ChipForeground}" FontSize="10.5" FontWeight="Bold" />
                             </Border>
-                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="13">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource OverlayText}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsWaiting}" Value="True">
-                                                <Setter Property="Foreground" Value="{StaticResource OverlayDim}" />
-                                                <Setter Property="FontStyle" Value="Italic" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </DockPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock x:Name="T" Text="{Binding Title}" Foreground="{StaticResource OverlayText}" FontSize="13" TextWrapping="Wrap" />
+                                <ItemsControl ItemsSource="{Binding Extra}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat='• {0}'}" Foreground="{StaticResource OverlayMuted}" FontSize="12" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                                <Setter TargetName="T" Property="Foreground" Value="{StaticResource OverlayDim}" />
+                                <Setter TargetName="T" Property="FontSize" Value="12" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock x:Name="NodeLine" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,0" />
-            <TextBlock x:Name="FlashLine" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0" Foreground="{StaticResource OverlayAccent}" />
+
+            <TextBlock x:Name="FlashLine" TextWrapping="Wrap" FontSize="12.5" Margin="0,6,0,0" Foreground="{StaticResource OverlayAccent}" />
         </StackPanel>
     </Border>
 </local:OverlayWindowBase>

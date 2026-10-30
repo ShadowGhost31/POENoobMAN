@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PoeNoobMan.Core.Guides;
+using PoeNoobMan.Core.Log;
 
 namespace PoeNoobMan.App.ViewModels;
 
@@ -26,7 +27,10 @@ public sealed class StepItem(GuideStep step) : ObservableObject
 
     public string Id => step.Id;
     public string Act => $"A{step.Act}";
-    public string Text => step.Text;
+    /// <summary>Крок маршруту — «Зона: дія → далі», інші — «МІТКА: текст».</summary>
+    public string Text => step.KindOf() == StepKind.Route
+        ? $"{AreaNames.NameOf(step.When!.Area!) ?? step.When.Area}: {step.Text}{(step.Done?.Area is { } n ? $"  → {AreaNames.NameOf(n) ?? n}" : "")}"
+        : $"{HintBuilder.Hint(step).Chip}: {step.Text}";
     public string? Note => step.Note;
     public bool HasNote => !string.IsNullOrWhiteSpace(step.Note);
     public string? WhenText => step.When is null ? null : step.When.ToString();
@@ -54,12 +58,6 @@ public sealed class NodeItem(TreeNode node) : ObservableObject
     public bool IsNext { get => _isNext; set => Set(ref _isNext, value); }
 }
 
-public sealed class HintItem
-{
-    public required string Act { get; init; }
-    public required string Text { get; init; }
-    public bool IsWaiting { get; init; }
-}
 
 public sealed class SplitRowItem
 {

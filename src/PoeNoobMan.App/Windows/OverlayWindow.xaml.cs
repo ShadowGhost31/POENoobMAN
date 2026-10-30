@@ -1,11 +1,13 @@
 using System.Windows;
-using System.Windows.Documents;
 using PoeNoobMan.App.ViewModels;
 using PoeNoobMan.Core.Log;
 
 namespace PoeNoobMan.App.Windows;
 
-/// <summary>Рядок зони/рівня/очок, до N поточних кроків і наступна нода дерева.</summary>
+/// <summary>
+/// Акт і зона з рівнем; блок «зараз»: що зробити в зоні і куди далі; підказки білда з кольоровими мітками;
+/// наступна нода дерева.
+/// </summary>
 public partial class OverlayWindow : OverlayWindowBase
 {
     private readonly AppController _app;
@@ -27,40 +29,43 @@ public partial class OverlayWindow : OverlayWindowBase
 
         if (_app.Engine is not { } engine)
         {
-            Header.Text = "PoE Noob Man";
-            Hints.ItemsSource = new[] { new HintItem { Act = "!", Text = "Оберіть гайд у налаштуваннях", IsWaiting = true } };
-            NodeLine.Visibility = Visibility.Collapsed;
+            ActChip.Visibility = Visibility.Collapsed;
+            ZoneName.Text = "PoE Noob Man";
+            Stats.Text = "";
+            RouteBox.Visibility = Visibility.Visible;
+            RouteTitle.Text = "Оберіть білд у налаштуваннях";
+            RouteExtra.ItemsSource = null;
+            RouteNext.Text = "";
+            Hints.ItemsSource = null;
             return;
         }
 
         var st = engine.State;
-        var zone = st.CurrentAreaName ?? "—";
         var act = AreaIds.ActOf(st.CurrentAreaId);
-        Header.Text = $"{zone}{(act is { } a ? $" (A{a})" : "")}  ·  Рів. {st.Level}  ·  Очки {engine.Points}";
+        ActChip.Visibility = act is null ? Visibility.Collapsed : Visibility.Visible;
+        ActText.Text = act is { } a ? (a == 11 ? "ЕПІЛОГ" : $"A{a}") : "";
+        ZoneName.Text = st.CurrentAreaName ?? "Зайдіть у гру";
+        Stats.Text = $"рів {st.Level} · {engine.Points} оч";
 
-        var steps = engine.GetSteps();
-        var hints = steps.Current.Take(Math.Max(1, s.MaxHints))
-            .Select(x => new HintItem { Act = $"A{x.Act}", Text = x.Text })
-            .ToList();
-        if (hints.Count < s.MaxHints && steps.Blocker is { } b)
-            hints.Add(new HintItem { Act = $"A{b.Act}", Text = $"Далі ({b.When}): {b.Text}", IsWaiting = true });
-        if (hints.Count == 0)
-            hints.Add(new HintItem { Act = "✓", Text = "Усі кроки гайда виконано", IsWaiting = true });
-        Hints.ItemsSource = hints;
+        var (route, hints) = HintBuilder.Build(engine, Math.Max(1, s.MaxHints));
+        if (route is not null)
+        {
+            RouteBox.Visibility = Visibility.Visible;
+            RouteTitle.Text = route.Title;
+            RouteExtra.ItemsSource = route.Extra;
+            RouteNext.Text = route.Next is { } next ? $"→ {next}" : "";
+            RouteNext.Visibility = route.Next is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+        else RouteBox.Visibility = Visibility.Collapsed;
 
         var nodes = engine.GetNodes();
-        NodeLine.Inlines.Clear();
         if (nodes.Now.FirstOrDefault() is { } now)
-        {
-            NodeLine.Inlines.Add(new Run("Взяти зараз: ") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayAccent") });
-            NodeLine.Inlines.Add(new Run(now.Refund ? $"зняти {now.Name}" : now.Name) { Foreground = (System.Windows.Media.Brush)FindResource("OverlayText") });
-        }
-        else if (nodes.Next is { } next)
-        {
-            NodeLine.Inlines.Add(new Run("Нода: ") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayMuted") });
-            NodeLine.Inlines.Add(new Run(next.Name) { Foreground = (System.Windows.Media.Brush)FindResource("OverlayText") });
-            NodeLine.Inlines.Add(new Run($" — {next.DescribeCondition()}") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayDim") });
-        }
-        NodeLine.Visibility = NodeLine.Inlines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            hints.Add(HintBuilder.Node("ДЕРЕВО", now.Refund ? $"зняти: {now.Name}" : now.Name, now: true));
+        else if (nodes.Next is { } nextNode)
+            hints.Add(HintBuilder.Node("ДЕРЕВО", $"{nextNode.Name} — {nextNode.DescribeCondition()}", now: false));
+
+        if (route is null && hints.Count == 0)
+            hints.Add(HintBuilder.Node("✓", "Усі кроки гайда виконано", now: false));
+        Hints.ItemsSource = hints;
     }
 }

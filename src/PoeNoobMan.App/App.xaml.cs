@@ -16,6 +16,15 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Розробка: PoeNoobMan.exe --preview <папка> — PNG оверлею без показу вікон
+        if (e.Args is ["--preview", var previewDir, ..])
+        {
+            using var preview = new AppController(Dispatcher);
+            preview.RenderPreview(previewDir);
+            Shutdown();
+            return;
+        }
+
         _singleInstance = new Mutex(true, "PoeNoobMan.SingleInstance", out var isFirst);
         if (!isFirst)
         {

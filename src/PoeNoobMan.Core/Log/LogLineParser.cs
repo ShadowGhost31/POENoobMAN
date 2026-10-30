@@ -22,6 +22,9 @@ public sealed partial class LogLineParser
     [GeneratedRegex(@"\] Successfully (allocated|unallocated) passive skill id: ([^,]*), name: (.+?)\s*$")]
     private static partial Regex AllocatedRegex();
 
+    [GeneratedRegex(@"\] : ([^ ]+) has joined the area\.\s*$")]
+    private static partial Regex JoinedRegex();
+
     [GeneratedRegex(@"\[LOADING SCREEN\] \(.*\) Duration = ([\d.]+) seconds")]
     private static partial Regex LoadingRegex();
 
@@ -55,6 +58,11 @@ public sealed partial class LogLineParser
             return new GameStarted(time, previous);
         }
 
+        if (line.Contains("Requesting to complete all tutorials", StringComparison.Ordinal))
+            return new CharacterCreated(time);
+        if (line.Contains("[SCENE] Set Source [(unknown)]", StringComparison.Ordinal))
+            return new CharacterSelect(time);
+
         var m = GeneratingRegex().Match(line);
         if (m.Success)
         {
@@ -79,6 +87,10 @@ public sealed partial class LogLineParser
         m = SlainRegex().Match(line);
         if (m.Success)
             return new CharacterSlain(time, m.Groups[1].Value);
+
+        m = JoinedRegex().Match(line);
+        if (m.Success)
+            return new PlayerJoined(time, m.Groups[1].Value);
 
         m = PassiveRegex().Match(line);
         if (m.Success)

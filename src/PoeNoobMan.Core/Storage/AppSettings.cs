@@ -42,9 +42,23 @@ public sealed class OverlaySettings
     public double Opacity { get; set; } = 0.8;
     public int MaxHints { get; set; } = 4;
 
-    /// <summary>Позиція підказок як частка від розміру вікна гри (0..1).</summary>
-    public double HintsX { get; set; } = 0.01;
-    public double HintsY { get; set; } = 0.30;
+    /// <summary>Позиція підказок як частка від розміру вікна гри (0..1): ліворуч під портретом і групою.</summary>
+    public double HintsX { get; set; } = 0.005;
+    public double HintsY { get; set; } = 0.27;
+
+    /// <summary>Версія розкладки: якщо менша за <see cref="CurrentLayout"/>, позиції один раз ставляться за замовчуванням.</summary>
+    public int LayoutVersion { get; set; }
+
+    public const int CurrentLayout = 2;
+
+    public void ApplyDefaultLayout(TimerSettings timer)
+    {
+        HintsX = 0.005;
+        HintsY = 0.27;
+        timer.X = 0.655;
+        timer.Y = 0.006;
+        LayoutVersion = CurrentLayout;
+    }
 }
 
 public sealed class TimerSettings
@@ -57,6 +71,7 @@ public sealed class TimerSettings
     /// <summary>Не рахувати екрани завантаження (load-removed, як у спідранерів).</summary>
     public bool RemoveLoads { get; set; } = true;
     public Comparison Comparison { get; set; } = Comparison.PersonalBest;
-    public double X { get; set; } = 0.60;
-    public double Y { get; set; } = 0.01;
+    /// <summary>Угорі між смугою здоров'я боса (по центру) і мінікартою (праворуч).</summary>
+    public double X { get; set; } = 0.655;
+    public double Y { get; set; } = 0.006;
 }

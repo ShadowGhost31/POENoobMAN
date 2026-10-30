@@ -23,6 +23,18 @@ public sealed record PassiveAllocated(DateTime Time, string Id, string Name, boo
     public bool IsAscendancy => Id.StartsWith("Ascendancy", StringComparison.OrdinalIgnoreCase);
 }
 
+/// <summary>
+/// "Requesting to complete all tutorials due to the client setting" — гра пише це одразу після першого входу
+/// нового персонажа на Twilight Strand. Ім'я стане відоме з першого рядка про рівень.
+/// </summary>
+public sealed record CharacterCreated(DateTime Time) : LogEvent(Time);
+
+/// <summary>"[SCENE] Set Source [(unknown)]" — гравець вийшов на екран вибору персонажа.</summary>
+public sealed record CharacterSelect(DateTime Time) : LogEvent(Time);
+
+/// <summary>"X has joined the area." — інший гравець (група); його рядки про рівень — не наші.</summary>
+public sealed record PlayerJoined(DateTime Time, string Name) : LogEvent(Time);
+
 /// <summary>"[LOADING SCREEN] (зона) Duration = N seconds" — скільки тривало завантаження.</summary>
 public sealed record LoadingScreen(DateTime Time, double Seconds) : LogEvent(Time);
 

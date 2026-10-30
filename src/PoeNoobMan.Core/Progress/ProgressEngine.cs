@@ -95,6 +95,9 @@ public sealed class ProgressEngine(GuideView view, ProgressState state)
     /// <summary>Крок маршруту: «у зоні X … далі Z».</summary>
     private static bool IsRouteStep(GuideStep s) => s.When?.Area is not null && s.Done?.Area is not null;
 
+    /// <summary>Персонаж уже пройшов хоч один крок маршруту кампанії (а не лише кроки перед ним, як-от мула).</summary>
+    public bool HasRouteProgress => View.Steps.Any(s => IsRouteStep(s) && IsDone(s));
+
     /// <summary>Найдальший акт, у якому побував персонаж (за відвіданими зонами).</summary>
     public int ProgressAct => Math.Max(1, State.VisitedAreas.Select(AreaIds.ActOf).Max() ?? 1);
 

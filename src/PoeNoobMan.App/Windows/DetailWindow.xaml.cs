@@ -110,11 +110,17 @@ public partial class DetailWindow : OverlayWindowBase
         }).Prepend(new SplitRowItem { Label = "Спліт", Current = "Зараз", Delta = "Δ", Best = "PB", Last = "Мин." }).ToList();
     }
 
+    public void SetListHeight(double height)
+    {
+        StepsScroll.MaxHeight = TreeScroll.MaxHeight = RunScroll.MaxHeight = height;
+        StepsScroll.Height = TreeScroll.Height = RunScroll.Height = height;
+    }
+
     /// <summary>Праворуч від гри, а якщо там немає місця — біля правого краю всередині вікна гри.</summary>
     public void ShowBeside(GameWindowInfo game)
     {
         var c = game.Client;
-        var maxHeightDip = c.Height * 0.84 / Math.Max(DpiScale, 0.5);
+        var maxHeightDip = c.Height * 0.68 / Math.Max(DpiScale, 0.5);
         var listHeight = Math.Max(160, maxHeightDip / Math.Max(_app.Settings.Overlay.Scale, 0.5) - 240);
         StepsScroll.MaxHeight = TreeScroll.MaxHeight = RunScroll.MaxHeight = listHeight;
         StepsScroll.Height = TreeScroll.Height = RunScroll.Height = listHeight;
@@ -124,8 +130,11 @@ public partial class DetailWindow : OverlayWindowBase
         UpdateLayout();
         var size = PixelBounds();
         var work = Native.Win32.WorkAreaOf(game.Hwnd);
-        var x = c.Right + 8 + size.Width <= work.Right ? c.Right + 8 : c.Right - size.Width - 16;
-        var y = c.Top + (int)(c.Height * 0.08);
+        // Праворуч від гри; якщо гра на весь екран — біля правого краю, нижче мінікарти
+        var outside = c.Right + 8 + size.Width <= work.Right;
+        var x = outside ? c.Right + 8 : c.Right - size.Width - 16;
+        var y = c.Top + (int)(c.Height * (outside ? 0.08 : 0.27));
+        if (!outside && y + size.Height > c.Bottom) y = Math.Max(c.Top, c.Bottom - size.Height - 8);
         ShowAt(x, y);
         if (opening) ScrollToCurrent();
     }

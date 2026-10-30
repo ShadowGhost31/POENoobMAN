@@ -1,7 +1,8 @@
 # Arma Crema Scion — левелінг за гайдом Maxroll (патч 3.29).
 # Маршрут кампанії (зони, квести, боси, лабіринти, спліти) — routes/campaign@3.29.yaml.
 # Тут лише кроки білда; кожен вставляється після кроку маршруту з after: ("^" — на самий початок).
-# Підказки без done (геми, вендори) закриваються самі, коли ви побачили їх у місті і вийшли з міста.
+# kind: gems | buy | craft | tip — мітка в оверлеї; « · » розділяє короткі пункти.
+# Підказки без done закриваються самі, коли ви побачили їх у місті і вийшли з міста.
 # Тексти — короткий власний переказ; деталі дивіться в оригіналі (source).
 
 id: arma-crema-scion
@@ -33,317 +34,127 @@ options:
 
 steps:
   # ---------- Мул (до маршруту) ----------
-  - id: mule_create
-    after: "^"
-    act: 1
-    if: { mule: "yes" }
-    text: "Мул: створіть Відьму, вбийте Hillock, увійдіть у Lioneye's Watch"
-    done: { area: "1_1_town" }
-  - id: mule_tarkleigh_sc
-    after: "^"
-    act: 1
-    if: { mule: "yes", movement: shield_charge }
-    text: "Мул: Rolling Magma у Tarkleigh; шукайте BBB, BBG/BGR, щит GR/GGR (F7 — regex)"
-    regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g|buckler"
-  - id: mule_tarkleigh_ls
-    after: "^"
-    act: 1
-    if: { mule: "yes", movement: leap_slam }
-    text: "Мул: Rolling Magma у Tarkleigh; шукайте BBB, BBG/BGR, сокиру/меч GR/GGR (F7 — regex)"
-    regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g"
-  - id: mule_nessa
-    after: "^"
-    act: 1
-    if: { mule: "yes" }
-    optional: true
-    text: "(опц.) Мул у Nessa: Coral Ring за 3 Wisdom, Driftwood Wand, 1–2 Goat's Horn"
-  - id: mule_stash
-    after: "^"
-    act: 1
-    if: { mule: "yes" }
-    text: "Мул: у сховище — вейд, Rolling Magma, Arcane Surge, фласки; виходьте на Скіона"
+  - { id: mule_create, after: "^", act: 1, if: { mule: "yes" }, kind: tip, done: { area: "1_1_town" },
+      text: "Мул: створіть Відьму · ⚔ Hillock → Lioneye's Watch" }
+  - { id: mule_tarkleigh_sc, after: "^", act: 1, if: { mule: "yes", movement: shield_charge }, kind: buy,
+      text: "Мул: Rolling Magma у Tarkleigh · шукайте BBB, BBG/BGR, щит GR/GGR (F7)",
+      regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g|buckler" }
+  - { id: mule_tarkleigh_ls, after: "^", act: 1, if: { mule: "yes", movement: leap_slam }, kind: buy,
+      text: "Мул: Rolling Magma у Tarkleigh · шукайте BBB, BBG/BGR, сокиру/меч GR/GGR (F7)",
+      regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g" }
+  - { id: mule_nessa, after: "^", act: 1, if: { mule: "yes" }, kind: buy, optional: true,
+      text: "Мул у Nessa (опц.) · Coral Ring за 3 Wisdom · Driftwood Wand · 1–2 Goat's Horn" }
+  - { id: mule_stash, after: "^", act: 1, if: { mule: "yes" }, kind: tip,
+      text: "Мул: у сховище — вейд, Rolling Magma, Arcane Surge, фласки · виходьте на Скіона" }
 
   # ---------- Act 1 ----------
-  - id: a1_l2
-    after: a1_town
-    act: 1
-    when: { level: 2 }
-    text: "Рів. 2: Rolling Magma + Arcane Surge; Rusted Sword → 2× Driftwood Wand (не крафтити)"
-  - id: a1_l4
-    after: a1_coast
-    act: 1
-    when: { level: 4 }
-    text: "Рів. 4: Rolling Magma + Ele Prolif · Sniper's Mark · Flame Wall · Frostblink + Arcane Surge"
-  - id: a1_l4_sc
-    after: a1_coast
-    act: 1
-    when: { level: 4 }
-    if: { movement: shield_charge }
-    text: "(опц.) Shield Charge + Momentum; щит GR/GGR і 2× Goat's Horn (F7 — regex)"
-    regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g|buckler"
-  - id: a1_l4_ls
-    after: a1_coast
-    act: 1
-    when: { level: 4 }
-    if: { movement: leap_slam }
-    text: "Сокира/меч GR/GGR під Leap Slam і 2× Goat's Horn (F7 — regex)"
-    regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g"
-  - id: a1_l8
-    after: a1_lower
-    act: 1
-    when: { level: 8 }
-    text: "Рів. 8: Rolling Magma + Ele Prolif + Added Lightning Damage"
-  - id: a1_l8_ls
-    after: a1_lower
-    act: 1
-    when: { level: 8 }
-    if: { movement: leap_slam }
-    text: "Сила під Leap Slam: Heavy Belt або Amber Amulet (або сила на дереві)"
-  - id: a1_l10_sc
-    after: a1_upper
-    act: 1
-    when: { level: 10 }
-    if: { movement: shield_charge }
-    text: "Рів. 10: Shield Charge + Faster Attacks + Momentum; щит у дорозі, вейд на босах"
-  - id: a1_l10_ls
-    after: a1_upper
-    act: 1
-    when: { level: 10 }
-    if: { movement: leap_slam }
-    text: "Рів. 10: Leap Slam + Faster Attacks + Momentum; свап Goat's Horns ↔ сокира + меч"
-  - id: a1_flamedash
-    after: a1_upper
-    act: 1
-    when: { level: 10 }
-    optional: true
-    text: "(опц.) Frostblink → Flame Dash"
+  - { id: a1_l2, after: a1_town, act: 1, when: { level: 2 }, kind: gems,
+      text: "Rolling Magma + Arcane Surge · Rusted Sword → 2× Driftwood Wand (не крафтити)" }
+  - { id: a1_l4, after: a1_coast, act: 1, when: { level: 4 }, kind: gems,
+      text: "Rolling Magma + Ele Prolif · Sniper's Mark · Flame Wall · Frostblink + Arcane Surge" }
+  - { id: a1_l4_sc, after: a1_coast, act: 1, when: { level: 4 }, if: { movement: shield_charge }, kind: buy,
+      text: "Nessa · щит GR/GGR (F7 — regex) · 2× Goat's Horn · (опц.) Shield Charge + Momentum",
+      regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g|buckler" }
+  - { id: a1_l4_ls, after: a1_coast, act: 1, when: { level: 4 }, if: { movement: leap_slam }, kind: buy,
+      text: "Nessa · сокира/меч GR/GGR під Leap Slam (F7 — regex) · 2× Goat's Horn",
+      regex: "b-b-|-b-b|b-.-b|b-b|nne|r-.-b|b-r-|g-b-r|g-r|r-g" }
+  - { id: a1_l8, after: a1_lower, act: 1, when: { level: 8 }, kind: gems,
+      text: "Rolling Magma + Ele Prolif + Added Lightning" }
+  - { id: a1_l8_ls, after: a1_lower, act: 1, when: { level: 8 }, if: { movement: leap_slam }, kind: buy,
+      text: "Сила під Leap Slam · Heavy Belt або Amber Amulet (або сила на дереві)" }
+  - { id: a1_l10_sc, after: a1_upper, act: 1, when: { level: 10 }, if: { movement: shield_charge }, kind: gems,
+      text: "Shield Charge + Faster Attacks + Momentum · щит у дорозі, вейд на босах" }
+  - { id: a1_l10_ls, after: a1_upper, act: 1, when: { level: 10 }, if: { movement: leap_slam }, kind: gems,
+      text: "Leap Slam + Faster Attacks + Momentum · свап: Goat's Horns ↔ сокира + меч" }
+  - { id: a1_flamedash, after: a1_upper, act: 1, when: { level: 10 }, optional: true, kind: gems,
+      text: "(опц.) Frostblink → Flame Dash" }
 
   # ---------- Act 2 ----------
-  - id: a2_l16
-    after: a2_sins2
-    act: 2
-    when: { level: 16 }
-    text: "Рів. 16: Herald of Thunder; (опц.) Herald of Ice/Skitterbots, Blood Rage, Arctic Armour"
-    note: "Для Dex-гемів потрібен Jade Amulet або Dex на дереві."
-  - id: a2_lightning_warp
-    after: a2_western
-    act: 2
-    when: { area: "1_2_9" }
-    optional: true
-    text: "(опц.) У Nessa (A1) купіть Lightning Warp для скіпів"
-  - id: a2_bandits
-    after: a2_western
-    act: 2
-    when: { area: "1_2_9" }
-    text: "Бандити: допоможіть Alira (Kraityn і Oak — вбити)"
-  - id: a2_l18
-    after: a2_weaver
-    act: 2
-    when: { level: 18 }
-    text: "Рів. 18: Conc Effect або Cruelty безкоштовно, другий купіть; WoC, Desecrate, Ele Focus"
-    note: "Покупки можна відкласти до Vaal Oversoul, коли буде достатньо Alteration."
+  - { id: a2_l16, after: a2_sins2, act: 2, when: { level: 16 }, kind: gems,
+      text: "Herald of Thunder · (опц.) Herald of Ice / Skitterbots · (опц.) Blood Rage, Arctic Armour",
+      note: "Для Dex-гемів потрібен Jade Amulet або Dex на дереві." }
+  - { id: a2_lightning_warp, after: a2_western, act: 2, when: { area: "1_2_9" }, optional: true, kind: buy,
+      text: "(опц.) Nessa (A1): Lightning Warp для скіпів" }
+  - { id: a2_bandits, after: a2_western, act: 2, when: { area: "1_2_9" }, kind: tip,
+      text: "Бандити: допоможіть Alira · Kraityn і Oak — вбити" }
+  - { id: a2_l18, after: a2_weaver, act: 2, when: { level: 18 }, kind: buy,
+      text: "Conc Effect або Cruelty — безкоштовно, другий купіть · Wave of Conviction · Desecrate · Elemental Focus",
+      note: "Покупки можна відкласти до Vaal Oversoul, коли буде достатньо Alteration." }
 
   # ---------- Act 3 ----------
-  - id: a3_l24
-    after: a3_crematorium
-    act: 3
-    when: { level: 24 }
-    text: "Рів. 24: купіть Haste; (опц.) Anger на боси; (опц.) Anger/Flammability у Maramoa"
-  - id: a3_l24_res
-    after: a3_crematorium
-    act: 3
-    when: { level: 24 }
-    if: { act6_path: res_reduction }
-    text: "Шлях Monster Res: Flammability замість Sniper's Mark, зніміть мастері Inversion"
-  - id: a3_solaris_craft
-    after: a3_solaris2
-    act: 3
-    when: { area: "1_3_8_2" }
-    text: "Solaris 2: відкрийте Fire крафт у кімнаті біля Lady Dialla"
-  - id: a3_craft_sc
-    after: a3_solaris2
-    act: 3
-    when: { level: 24 }
-    if: { movement: shield_charge }
-    text: "Скрафтіть Flat Fire to Spells на вейди (4–8 Transmute)"
-  - id: a3_craft_ls
-    after: a3_solaris2
-    act: 3
-    when: { level: 24 }
-    if: { movement: leap_slam }
-    text: "Скрафтіть Flat Fire to Spells на зброю Leap Slam (8 Transmute)"
-  - id: a3_l28
-    after: a3_barracks
-    act: 3
-    when: { level: 28 }
-    text: "Рів. 28: купіть Cremation і Armageddon Brand; Armageddon Brand замість Rolling Magma"
-  - id: a3_setup
-    after: a3_barracks
-    act: 3
-    when: { level: 28 }
-    text: "Сетап: AB + Ele Prolif + Added Lightning · Cremation + Conc Effect + Cruelty/Ele Focus"
-    note: "Також: WoC + Flame Wall · Desecrate · Frostblink + Arcane Surge + Sniper's Mark/Flammability · SC/LS + Faster Attacks + Momentum · Haste/Anger · Blood Rage."
+  - { id: a3_l24, after: a3_crematorium, act: 3, when: { level: 24 }, kind: buy,
+      text: "Haste · (опц.) Anger на боси · Maramoa: Anger або Flammability безкоштовно" }
+  - { id: a3_l24_res, after: a3_crematorium, act: 3, when: { level: 24 }, if: { act6_path: res_reduction }, kind: gems,
+      text: "Шлях Monster Res · Flammability замість Sniper's Mark · зніміть мастері Inversion" }
+  - { id: a3_solaris_craft, after: a3_solaris2, act: 3, when: { area: "1_3_8_2" }, kind: craft,
+      text: "Відкрийте Fire крафт — кімната біля Lady Dialla" }
+  - { id: a3_craft_sc, after: a3_solaris2, act: 3, when: { level: 24 }, if: { movement: shield_charge }, kind: craft,
+      text: "Flat Fire to Spells на вейди · 4–8 Transmute" }
+  - { id: a3_craft_ls, after: a3_solaris2, act: 3, when: { level: 24 }, if: { movement: leap_slam }, kind: craft,
+      text: "Flat Fire to Spells на зброю Leap Slam · 8 Transmute" }
+  - { id: a3_l28, after: a3_barracks, act: 3, when: { level: 28 }, kind: buy,
+      text: "Cremation · Armageddon Brand — замість Rolling Magma" }
+  - { id: a3_setup, after: a3_barracks, act: 3, when: { level: 28 }, kind: gems,
+      text: "Armageddon Brand + Ele Prolif + Added Lightning · Cremation + Conc Effect + Cruelty/Ele Focus · WoC + Flame Wall · Haste/Anger · Blood Rage" }
 
   # ---------- Act 4 ----------
-  - id: a4_kaom_level
-    after: a4_kaomdream
-    act: 4
-    when: { area: "1_4_4_1" }
-    done: { level: 32 }
-    text: "Набийте 32 рівень до входу в Kaom's Stronghold"
-  - id: a4_l38
-    after: a4_harvest
-    act: 4
-    when: { level: 38 }
-    text: "Рів. 38: Immolate у 4-лінк Armageddon Brand"
-    note: "(опц.) голем у Oyun; Ignite Prolif замість Ele Prolif; CWDT + Immortal Call — по 1 Alchemy."
+  - { id: a4_kaom_level, after: a4_kaomdream, act: 4, when: { area: "1_4_4_1" }, done: { level: 32 }, kind: tip,
+      text: "Набийте 32 рівень до Kaom's Stronghold" }
+  - { id: a4_l38, after: a4_harvest, act: 4, when: { level: 38 }, kind: gems,
+      text: "Immolate у 4-лінк Armageddon Brand · (опц.) голем у Oyun · (опц.) Ignite Prolif, CWDT + Immortal Call" }
 
   # ---------- Act 5 ----------
-  - id: a5_ruby
-    after: a5_town
-    act: 5
-    when: { area: "1_5_town" }
-    text: "Після The Key to Freedom: Ruby Flask у Lani"
-  - id: a5_innocence_farm
-    after: a5_innocence
-    act: 5
-    when: { area: "1_5_5" }
-    optional: true
-    text: "(реком.) Chamber of Innocence: фарм гарантованих Magic пачок"
-  - id: a5_portal
-    after: a5_ruined
-    act: 5
-    when: { area: "1_5_3b" }
-    text: "Перед Reliquary: портал біля входу на Cathedral Rooftop"
+  - { id: a5_ruby, after: a5_town, act: 5, when: { area: "1_5_town" }, kind: buy, text: "Lani: Ruby Flask (The Key to Freedom)" }
+  - { id: a5_innocence_farm, after: a5_innocence, act: 5, when: { area: "1_5_5" }, optional: true, kind: tip,
+      text: "(реком.) фарм гарантованих Magic пачок" }
+  - { id: a5_portal, after: a5_ruined, act: 5, when: { area: "1_5_3b" }, kind: tip,
+      text: "Портал біля входу на Cathedral Rooftop — перед Reliquary" }
 
   # ---------- Act 6 ----------
-  - id: a6_lily
-    after: a6_strand
-    act: 6
-    when: { area: "2_6_1" }
-    text: "Lily Roth: перевірте вибір шляху (Inversion / Monster Res) у налаштуваннях"
-  - id: a6_res
-    after: a6_strand
-    act: 6
-    when: { area: "2_6_1" }
-    if: { act6_path: res_reduction }
-    text: "Шлях Monster Res: Added Lightning → Combustion, Ele Prolif → Ignite Prolif"
-  - id: a6_setup
-    after: a6_strand
-    act: 6
-    when: { area: "2_6_1" }
-    text: "Сетап A6: AB + Ignite Prolif + Combustion + Immolate · Cremation + Conc + Ele Focus + Cruelty"
-    note: "Також: SC/LS + Momentum + Faster Attacks · CWDT + Immortal Call · Frostblink + Arcane Surge + Flammability + WoC · Haste/Anger."
+  - { id: a6_lily, after: a6_strand, act: 6, when: { area: "2_6_1" }, kind: tip,
+      text: "Lily Roth: оберіть шлях у налаштуваннях · Inversion або Monster Res" }
+  - { id: a6_res, after: a6_strand, act: 6, when: { area: "2_6_1" }, if: { act6_path: res_reduction }, kind: gems,
+      text: "Added Lightning → Combustion · Ele Prolif → Ignite Prolif" }
+  - { id: a6_setup, after: a6_strand, act: 6, when: { area: "2_6_1" }, kind: gems,
+      text: "AB + Ignite Prolif + Combustion + Immolate · Cremation + Conc + Ele Focus + Cruelty · CWDT + Immortal Call · Frostblink + Arcane Surge + Flammability + WoC" }
 
   # ---------- Act 7 ----------
-  - id: a7_pantheon
-    after: a7_town
-    act: 7
-    when: { area: "2_7_town" }
-    text: "Пантеон: major — Soul of the Brine King, minor — Ryslatha"
-  - id: a7_locket
-    after: a7_bridge
-    act: 7
-    when: { area: "2_7_1" }
-    text: "Після The Silver Locket: Granite або Jade Flask у Weylam"
-  - id: a7_dread_craft
-    after: a7_dread
-    act: 7
-    when: { area: "2_7_9" }
-    optional: true
-    text: "(опц.) Dread Thicket: T2 Fire крафт біля Dreadstone"
-    note: "Вейд: 2–4 Alchemy. Зброя Leap Slam: 2 Scouring + 4 Alchemy."
+  - { id: a7_pantheon, after: a7_town, act: 7, when: { area: "2_7_town" }, kind: tip,
+      text: "Пантеон · major — Brine King · minor — Ryslatha" }
+  - { id: a7_locket, after: a7_bridge, act: 7, when: { area: "2_7_1" }, kind: buy, text: "Weylam: Granite або Jade Flask (Silver Locket)" }
+  - { id: a7_dread_craft, after: a7_dread, act: 7, when: { area: "2_7_9" }, optional: true, kind: craft,
+      text: "(опц.) T2 Fire крафт біля Dreadstone · вейд: 2–4 Alchemy · зброя LS: 2 Scouring + 4 Alchemy" }
 
   # ---------- Act 8 ----------
-  - id: a8_arctic
-    after: a8_ramparts
-    act: 8
-    when: { area: "2_8_1" }
-    text: "Act 8: Arctic Armour у зонах з холодом"
-  - id: a8_harbour_tip
-    after: a8_harbour
-    act: 8
-    when: { area: "2_8_13" }
-    optional: true
-    text: "Harbour Bridge: при поверненні Ctrl+клік по входу — новий інстанс заради досвіду"
+  - { id: a8_arctic, after: a8_ramparts, act: 8, when: { area: "2_8_1" }, kind: gems, text: "Arctic Armour у зонах з холодом" }
+  - { id: a8_harbour_tip, after: a8_harbour, act: 8, when: { area: "2_8_13" }, optional: true, kind: tip,
+      text: "Повертаючись: Ctrl+клік по входу — новий інстанс заради досвіду" }
 
   # ---------- Act 9 ----------
-  - id: a9_storm_blade
-    after: a9_desert
-    act: 9
-    when: { area: "2_9_3" }
-    text: "Після The Storm Blade: рідкий Opal Sceptre"
-  - id: a9_belly_tip
-    after: a9_belly
-    act: 9
-    when: { area: "2_9_10_1" }
-    optional: true
-    text: "(опц.) Belly of the Beast: фласка від Bleed і Grace"
+  - { id: a9_storm_blade, after: a9_desert, act: 9, when: { area: "2_9_3" }, kind: buy, text: "Нагорода за Storm Blade: рідкий Opal Sceptre" }
+  - { id: a9_belly_tip, after: a9_belly, act: 9, when: { area: "2_9_10_1" }, optional: true, kind: tip,
+      text: "(опц.) фласка від Bleed · Grace" }
 
   # ---------- Act 10 ----------
-  - id: a10_silver
-    after: a10_rooftop
-    act: 10
-    when: { area: "2_10_1" }
-    text: "Після Safe Passage (Bannon): Silver Flask"
-  - id: a10_ravaged_tip
-    after: a10_ravaged
-    act: 10
-    when: { area: "2_10_2" }
-    text: "Ravaged Square: портал біля входу, WP у місто, через портал на південь до Control Blocks"
-  - id: a10_rebirth
-    after: a10_chambers
-    act: 10
-    when: { area: "2_10_4" }
-    text: "Після Death and Rebirth: рідкий Widowsilk Robe або Blood Raiment"
+  - { id: a10_silver, after: a10_rooftop, act: 10, when: { area: "2_10_1" }, kind: buy, text: "Bannon: Silver Flask (Safe Passage)" }
+  - { id: a10_ravaged_tip, after: a10_ravaged, act: 10, when: { area: "2_10_2" }, kind: tip,
+      text: "Портал біля входу · WP у місто · через портал на південь до Control Blocks" }
+  - { id: a10_rebirth, after: a10_chambers, act: 10, when: { area: "2_10_4" }, kind: buy,
+      text: "Нагорода Death and Rebirth: Widowsilk Robe або Blood Raiment" }
 
 tree:
-  - id: ash_frost_storm
-    name: "Ash, Frost and Storm — шлях до мастері Inversion"
-    passives: ["Ash, Frost and Storm"]
-  - id: inversion
-    name: "Мастері Inversion (15% шанс інвертувати резисти монстрів)"
-  - id: ls_strength
-    name: "Сила під Leap Slam (якщо немає Heavy Belt / Amber Amulet)"
-    when: { level: 8 }
-    if: { movement: leap_slam }
-    optional: true
-  - id: dreamer
-    name: "(опц.) Dreamer + мастері 12% Mana Reservation Efficiency"
-    when: { level: 24 }
-    optional: true
-  - id: refund_inversion
-    name: "Зняти мастері Inversion (шлях Monster Res)"
-    when: { level: 24 }
-    if: { act6_path: res_reduction }
-    refund: true
-  - id: explosive_impact
-    name: "Explosive Impact (мастері Fire)"
-    when: { points: 34 }
-    passives: ["Fire Mastery"]
-  - id: templar_aoe
-    name: "Ноутаблі Templar на area / attack speed"
-    when: { points: 43 }
-  - id: elemental_overload
-    name: "Elemental Overload"
-    when: { points: 52 }
-    passives: ["Elemental Overload"]
-  - id: heart_and_soul
-    name: "Practical Application, Heart and Soul, Fire Walker"
-    when: { points: 61 }
-    passives: ["Practical Application", "Heart and Soul", "Fire Walker"]
-  - id: purity_of_flesh
-    name: "Purity of Flesh + мастері Skills Cost Life"
-    when: { points: 63 }
-    passives: ["Purity of Flesh"]
-  - id: sc_end
-    name: "Deep Thoughts, Cruel Preparation, Heart of Flame, Righteous Army"
-    if: { movement: shield_charge }
-    passives: ["Deep Thoughts", "Cruel Preparation", "Heart of Flame", "Righteous Army"]
-  - id: ls_end
-    name: "Dark Arts, Coordination, Attack and Cast Speed"
-    if: { movement: leap_slam }
-    passives: ["Dark Arts", "Coordination"]
-  - id: surge_of_vigour
-    name: "(опц.) Surge of Vigour + Regenerate 50 Life (під Blood Rage)"
-    optional: true
+  - { id: ash_frost_storm, name: "Ash, Frost and Storm — до мастері Inversion", passives: ["Ash, Frost and Storm"] }
+  - { id: inversion, name: "Мастері Inversion" }
+  - { id: ls_strength, name: "Сила під Leap Slam", when: { level: 8 }, if: { movement: leap_slam }, optional: true }
+  - { id: dreamer, name: "(опц.) Dreamer + 12% Mana Reservation Efficiency", when: { level: 24 }, optional: true }
+  - { id: refund_inversion, name: "Мастері Inversion (шлях Monster Res)", when: { level: 24 }, if: { act6_path: res_reduction }, refund: true }
+  - { id: explosive_impact, name: "Explosive Impact (мастері Fire)", when: { points: 34 }, passives: ["Fire Mastery"] }
+  - { id: templar_aoe, name: "Ноутаблі Templar на area / attack speed", when: { points: 43 } }
+  - { id: elemental_overload, name: "Elemental Overload", when: { points: 52 }, passives: ["Elemental Overload"] }
+  - { id: heart_and_soul, name: "Practical Application, Heart and Soul, Fire Walker", when: { points: 61 },
+      passives: ["Practical Application", "Heart and Soul", "Fire Walker"] }
+  - { id: purity_of_flesh, name: "Purity of Flesh + мастері Skills Cost Life", when: { points: 63 }, passives: ["Purity of Flesh"] }
+  - { id: sc_end, name: "Deep Thoughts, Cruel Preparation, Heart of Flame, Righteous Army", if: { movement: shield_charge },
+      passives: ["Deep Thoughts", "Cruel Preparation", "Heart of Flame", "Righteous Army"] }
+  - { id: ls_end, name: "Dark Arts, Coordination, Attack and Cast Speed", if: { movement: leap_slam }, passives: ["Dark Arts", "Coordination"] }
+  - { id: surge_of_vigour, name: "(опц.) Surge of Vigour + Regenerate 50 Life", optional: true }

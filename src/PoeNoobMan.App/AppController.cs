@@ -38,6 +38,11 @@ public sealed class AppController : IDisposable
     {
         _dispatcher = dispatcher;
         Settings = JsonStore.Load<AppSettings>(AppPaths.Settings);
+        if (Settings.Overlay.LayoutVersion < OverlaySettings.CurrentLayout)
+        {
+            Settings.Overlay.ApplyDefaultLayout(Settings.Timer);
+            SaveSettingsFile();
+        }
         _logState = JsonStore.Load<LogState>(AppPaths.LogState);
 
         Directory.CreateDirectory(AppPaths.GuidesDir);
@@ -68,7 +73,6 @@ public sealed class AppController : IDisposable
 
     public GuideEntry? GuideEntry { get; private set; }
     public GuideView? View { get; private set; }
-    public ProgressEngine? Engine { get; private set; }
     public SplitTracker? Tracker { get; private set; }
 
     public bool OverlayEnabled { get; private set; }
@@ -284,7 +288,6 @@ public sealed class AppController : IDisposable
         if (GuideEntry?.Guide is not { } guide)
         {
             View = null;
-            Engine = null;
             Tracker = null;
             Session = null;
             RaiseChanged();
@@ -294,29 +297,41 @@ public sealed class AppController : IDisposable
         Settings.GuideId = guide.Id;
         Settings.GuideVersion = guide.Version;
         View = GuideView.Create(guide, Settings.OptionsFor(guide.Id));
-        Engine = new ProgressEngine(View, _progressStore.Load(guide.Id, Settings.CharacterName));
-        Engine.RestoreCurrentArea();
-        Engine.Recompute();
+        var key = !string.IsNullOrWhiteSpace(Settings.CharacterName) ? Settings.CharacterName : _logState.ActiveCharacter ?? "";
+        var engine = new ProgressEngine(View, _progressStore.Load(guide.Id, key));
+        engine.RestoreCurrentArea();
+        engine.Recompute();
 
         var current = _runStore.LoadCurrent();
         Tracker = new SplitTracker(View.Splits, LoadHistory(guide.Id)) { RemoveLoads = Settings.Timer.RemoveLoads };
         if (current?.GuideId == guide.Id) Tracker.Load(current);
 
-        Session = new TrackingSession(Engine, Tracker)
+        var guideId = guide.Id;
+        Session = new TrackingSession(engine, Tracker)
         {
             CharacterName = Settings.CharacterName,
+            ActiveCharacter = _logState.ActiveCharacter,
             TimerEnabled = Settings.Timer.Enabled,
             AutoStart = Settings.Timer.AutoStart,
             StartRun = StartRun,
+            LoadProgress = name => _progressStore.Load(guideId, name),
+            SaveProgress = (name, state) => _progressStore.Save(guideId, name, state),
         };
         Session.CharacterSeen += name =>
         {
             if (!_logState.SeenCharacters.Contains(name)) _logState.SeenCharacters.Add(name);
         };
+        Session.ProgressSwitched += () => _logState.ActiveCharacter = Session?.ActiveCharacter;
         RaiseChanged();
     }
 
     public TrackingSession? Session { get; private set; }
+
+    /// <summary>Прогрес поточного персонажа (змінюється, коли в грі створили нового або зайшли іншим).</summary>
+    public ProgressEngine? Engine => Session?.Engine;
+
+    /// <summary>Персонаж, чий прогрес показано.</summary>
+    public string CharacterLabel => Session?.ProgressKey is { Length: > 0 } k ? k : "новий персонаж";
 
     private List<RunRecord> LoadHistory(string guideId)
     {
@@ -325,12 +340,15 @@ public sealed class AppController : IDisposable
         return all.Where(r => View.Options.All(o => r.Options.TryGetValue(o.Key, out var v) && v == o.Value)).ToList();
     }
 
+    /// <summary>Превʼю не зберігає нічого: ні прогрес, ні забіг, ні налаштування.</summary>
+    private bool _previewMode;
+
     private void SaveProgress()
     {
-        if (Engine is null) return;
+        if (Engine is null || _previewMode) return;
         try
         {
-            _progressStore.Save(View!.Guide.Id, Settings.CharacterName, Engine.State);
+            _progressStore.Save(View!.Guide.Id, Session!.ProgressKey, Engine.State);
         }
         catch (IOException ex)
         {
@@ -340,6 +358,7 @@ public sealed class AppController : IDisposable
 
     private void SaveRun()
     {
+        if (_previewMode) return;
         try
         {
             _runStore.SaveCurrent(Tracker?.Current);
@@ -545,6 +564,88 @@ public sealed class AppController : IDisposable
         Guides.Reload();
         LoadGuide();
         GuidesChanged?.Invoke();
+    }
+
+    // ---------------- Превʼю для розробки ----------------
+
+    /// <summary>
+    /// Малює оверлей, таймер і меню F9 з прикладом стану в PNG (запуск з <c>--preview &lt;папка&gt;</c>).
+    /// Нічого не показує на екрані і не зберігає прогрес — щоб перевіряти вигляд, не заважаючи грі.
+    /// </summary>
+    public void RenderPreview(string dir)
+    {
+        _previewMode = true;
+        Directory.CreateDirectory(dir);
+        LoadGuide();
+        if (View is not { } view) return;
+        _overlay = new OverlayWindow(this);
+        _timer = new TimerWindow(this);
+        _detail = new DetailWindow(this);
+
+        foreach (var (name, target, level) in new[] { ("act1", "a1_coast", 4), ("act3", "a3_solaris2", 25), ("act8", "a8_quay", 58) })
+        {
+            if (!view.Steps.Any(s => s.Id == target)) continue;
+            var tracker = new SplitTracker(view.Splits, []) { RemoveLoads = false };
+            Tracker = tracker;
+            Session = new TrackingSession(new ProgressEngine(view, new ProgressState()), tracker);
+            foreach (var ev in PreviewEvents(view, target, level)) Session.Handle(ev);
+
+            _overlay.Render();
+            _timer.Render();
+            _detail.Render();
+            _detail.SetListHeight(420);
+            SavePng(_overlay, Path.Combine(dir, $"overlay-{name}.png"));
+            SavePng(_timer, Path.Combine(dir, $"timer-{name}.png"));
+            SavePng(_detail, Path.Combine(dir, $"detail-{name}.png"));
+        }
+    }
+
+    /// <summary>Новий персонаж і проходження зон маршруту до кроку <paramref name="target"/> за останні ~хвилини.</summary>
+    private static List<LogEvent> PreviewEvents(GuideView view, string target, int level)
+    {
+        var zones = new List<GuideStep>();
+        foreach (var s in view.Steps)
+        {
+            if (s.KindOf() == Core.Guides.StepKind.Route) zones.Add(s);
+            if (s.Id == target) break;
+        }
+        var t = DateTime.Now.AddSeconds(-90 * (zones.Count + 2));
+        var events = new List<LogEvent>
+        {
+            new AreaEntered(t, "The Twilight Strand", "1_1_1", 1),
+            new CharacterCreated(t),
+        };
+        for (var i = 0; i < zones.Count; i++)
+        {
+            t = t.AddSeconds(90);
+            var lvl = Math.Max(2, (int)Math.Round(1 + (level - 1) * (i + 1.0) / zones.Count));
+            events.Add(new LevelUp(t, "Hero", "Ranger", lvl));
+            var area = zones[i].When!.Area!;
+            events.Add(new AreaEntered(t.AddSeconds(5), AreaNames.NameOf(area) ?? area, area, null));
+        }
+        return events;
+    }
+
+    private static void SavePng(Window window, string path)
+    {
+        if (window.Content is not FrameworkElement root) return;
+        root.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        root.Arrange(new Rect(root.DesiredSize));
+        root.UpdateLayout();
+        var w = Math.Max(1, (int)Math.Ceiling(root.ActualWidth)) + 40;
+        var h = Math.Max(1, (int)Math.Ceiling(root.ActualHeight)) + 40;
+        var visual = new System.Windows.Media.DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3A, 0x34, 0x2C)), null, new Rect(0, 0, w, h));
+            dc.DrawRectangle(new System.Windows.Media.VisualBrush(root), null, new Rect(20, 20, root.ActualWidth, root.ActualHeight));
+        }
+        var bmp = new System.Windows.Media.Imaging.RenderTargetBitmap(w, h, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+        bmp.Render(visual);
+        var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+        encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bmp));
+        using var fs = File.Create(path);
+        encoder.Save(fs);
     }
 
     public void Dispose()

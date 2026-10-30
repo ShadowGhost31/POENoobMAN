@@ -198,10 +198,10 @@
                                     <TextBox x:Name="LogPath" />
                                 </DockPanel>
                                 <TextBlock x:Name="LogStatus" FontSize="12" Margin="2,4,0,0" />
-                                <TextBlock Text="Ім'я персонажа" Margin="0,12,0,4" />
+                                <TextBlock Text="Ім'я персонажа (необов'язково)" Margin="0,12,0,4" />
                                 <ComboBox x:Name="Character" IsEditable="True" />
                                 <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0"
-                                           Text="За ім'ям фільтруються рядки про рівень, тому мул або інші персонажі не збивають прогрес." />
+                                           Text="Можна лишити порожнім: персонаж визначається з логу, для кожного свій прогрес, а новий персонаж починає гайд і таймер з нуля. Якщо вписати ім'я, рахується лише він." />
                             </StackPanel>
                         </Border>
                     </StackPanel>

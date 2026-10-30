@@ -96,8 +96,40 @@ public sealed class GuideStep
     /// <summary>Для кроків гайда з маршрутом: id кроку маршруту, після якого вставити цей крок.</summary>
     public string? After { get; set; }
 
+    /// <summary>Тип підказки для мітки в оверлеї: gems, buy, craft, tip (для кроків маршруту, квестів і лабіринтів — сам).</summary>
+    public string? Kind { get; set; }
+
     public string? Regex { get; set; }
     public bool Optional { get; set; }
+
+    /// <summary>Пункти тексту: « · » розділяє короткі рядки (геми, покупки).</summary>
+    public IReadOnlyList<string> Lines => Text.Split(" · ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+    public StepKind KindOf() =>
+        When?.Area is not null && Done?.Area is not null ? StepKind.Route
+        : Points > 0 ? StepKind.Reward
+        : Done?.Ascendancy is not null ? StepKind.Lab
+        : Kind?.ToLowerInvariant() switch
+        {
+            "gems" => StepKind.Gems,
+            "buy" => StepKind.Buy,
+            "craft" => StepKind.Craft,
+            "flask" => StepKind.Buy,
+            _ => StepKind.Tip,
+        };
+
+    public static readonly string[] KnownKinds = ["gems", "buy", "craft", "flask", "tip"];
+}
+
+public enum StepKind
+{
+    Route,
+    Reward,
+    Lab,
+    Gems,
+    Buy,
+    Craft,
+    Tip,
 }
 
 public sealed class TreeNode
