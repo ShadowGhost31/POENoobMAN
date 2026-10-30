@@ -38,9 +38,10 @@ public sealed class AppController : IDisposable
     {
         _dispatcher = dispatcher;
         Settings = JsonStore.Load<AppSettings>(AppPaths.Settings);
-        if (Settings.Overlay.LayoutVersion < OverlaySettings.CurrentLayout)
+        if (Settings.Overlay.LayoutVersion < OverlaySettings.CurrentLayout || string.IsNullOrWhiteSpace(Settings.UpdateSource))
         {
-            Settings.Overlay.ApplyDefaultLayout(Settings.Timer);
+            if (Settings.Overlay.LayoutVersion < OverlaySettings.CurrentLayout) Settings.Overlay.ApplyDefaultLayout(Settings.Timer);
+            if (string.IsNullOrWhiteSpace(Settings.UpdateSource)) Settings.UpdateSource = AppSettings.DefaultUpdateSource;
             SaveSettingsFile();
         }
         _logState = JsonStore.Load<LogState>(AppPaths.LogState);

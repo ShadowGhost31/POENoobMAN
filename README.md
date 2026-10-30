@@ -2,6 +2,10 @@
 
 Оверлей-помічник для левелінгу в Path of Exile: підказки за гайдом білда поверх гри, наступна нода дерева і таймер забігу зі сплітами, як у спідранерів.
 
+**Завантажити:** [PoeNoobMan-win-Setup.exe з останнього релізу](https://github.com/ShadowGhost31/POENoobMAN/releases/latest). Програма сама перевіряє оновлення в GitHub Releases.
+
+Неофіційний фанатський інструмент, не пов'язаний з Grinding Gear Games. Лише читає `Client.txt` і нічого не надсилає в гру.
+
 Вбудовані гайди (патч 3.29):
 
 - [Arma Crema Scion](https://maxroll.gg/poe/build-guides/arma-crema-scion-leveling-build-guide). Опції: мул-Відьма, Shield Charge або Leap Slam, шлях в Act 6.
@@ -227,11 +231,11 @@ PoeNoobMan.exe --preview C:\temp\preview
 
 Результат у `releases/`: `PoeNoobMan-win-Setup.exe` для встановлення, а також `*.nupkg` і `releases.win.json` для оновлень.
 
-Публікація на GitHub (застосунок сам знайде оновлення в GitHub Releases):
+Публікація нової версії на GitHub. Встановлені програми знайдуть її самі: джерело оновлень за замовчуванням — цей репозиторій.
 
 ```powershell
 $env:GITHUB_TOKEN = "<token з правом contents:write>"
-./build/pack.ps1 -Version 0.2.0 -RepoUrl https://github.com/<you>/POENoobMAN -Publish
+./build/pack.ps1 -Version 0.5.0 -RepoUrl https://github.com/ShadowGhost31/POENoobMAN -Publish
 ```
 
-Потім у налаштуваннях застосунку, у полі «Джерело оновлень», вкажіть посилання на репозиторій. Також підійде URL або локальна чи мережева папка з вмістом `releases/`.
+Джерело оновлень можна змінити в налаштуваннях: підійде інший GitHub-репозиторій, URL або локальна чи мережева папка з вмістом `releases/`.

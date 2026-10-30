@@ -17,7 +17,10 @@ public sealed class AppSettings
     public TimerSettings Timer { get; set; } = new();
 
     /// <summary>Посилання на GitHub-репозиторій, URL або локальна папка з релізами Velopack.</summary>
-    public string UpdateSource { get; set; } = "";
+    public string UpdateSource { get; set; } = DefaultUpdateSource;
+
+    /// <summary>Офіційні релізи (GitHub Releases); порожнє джерело в старих налаштуваннях замінюється на це.</summary>
+    public const string DefaultUpdateSource = "https://github.com/ShadowGhost31/POENoobMAN";
     public bool CheckUpdatesOnStart { get; set; } = true;
 
     public Dictionary<string, string> OptionsFor(string guideId) =>
