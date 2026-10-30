@@ -31,7 +31,7 @@ public sealed class GuideRepository
             var files = Directory.EnumerateFiles(dir, "*.yaml").Concat(Directory.EnumerateFiles(dir, "*.yml"));
             foreach (var file in files.Order(StringComparer.OrdinalIgnoreCase))
             {
-                var result = GuideLoader.LoadFile(file);
+                var result = GuideLoader.LoadFile(file, _dirs.Select(d => Path.Combine(d, "routes")).ToArray());
                 if (!result.IsValid)
                 {
                     broken.Add(result);

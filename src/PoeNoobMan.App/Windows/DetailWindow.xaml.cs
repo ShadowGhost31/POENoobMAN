@@ -58,6 +58,7 @@ public partial class DetailWindow : OverlayWindowBase
             item.IsDone = engine.State.DoneSteps.Contains(item.Id);
             item.IsCurrent = current.Contains(item.Id);
             item.IsBlocker = snapshot.Blocker?.Id == item.Id;
+            item.IsPassed = snapshot.Passed.Contains(item.Id);
         }
 
         var nodes = engine.GetNodes();

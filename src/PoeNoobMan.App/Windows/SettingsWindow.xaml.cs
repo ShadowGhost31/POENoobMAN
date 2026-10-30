@@ -121,6 +121,7 @@ public partial class SettingsWindow : Window
         TimerEnabled.IsChecked = s.Timer.Enabled;
         TimerAutoStart.IsChecked = s.Timer.AutoStart;
         TimerShowNext.IsChecked = s.Timer.ShowNext;
+        TimerRemoveLoads.IsChecked = s.Timer.RemoveLoads;
         TimerSameOptions.IsChecked = s.Timer.SameOptionsOnly;
         ComparisonBox.SelectedValue = s.Timer.Comparison.ToString();
 
@@ -216,6 +217,7 @@ public partial class SettingsWindow : Window
         s.Timer.Enabled = TimerEnabled.IsChecked == true;
         s.Timer.AutoStart = TimerAutoStart.IsChecked == true;
         s.Timer.ShowNext = TimerShowNext.IsChecked == true;
+        s.Timer.RemoveLoads = TimerRemoveLoads.IsChecked == true;
         s.Timer.SameOptionsOnly = TimerSameOptions.IsChecked == true;
         if (Enum.TryParse<Comparison>(ComparisonBox.SelectedValue as string, out var cmp)) s.Timer.Comparison = cmp;
 

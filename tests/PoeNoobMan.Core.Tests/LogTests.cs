@@ -28,6 +28,19 @@ public class LogTests
     }
 
     [Fact]
+    public void Parses_passive_points_and_game_start()
+    {
+        var p = new LogLineParser();
+        p.Parse("2026/08/24 22:56:00 1 a [INFO Client 1] : You have entered The Feeding Trough.");
+        Assert.Equal(1, Assert.IsType<PassivePointsReceived>(p.Parse("2026/08/24 22:57:00 1 a [INFO Client 1] : You have received a Passive Skill Point.")).Count);
+        Assert.Equal(2, Assert.IsType<PassivePointsReceived>(p.Parse("2026/08/24 23:08:19 1 a [INFO Client 1] : You have received 2 Passive Skill Points.")).Count);
+        Assert.Equal(24, Assert.IsType<QuestPointsReported>(p.Parse("2026/08/24 23:08:19 1 a [INFO Client 1] : 24 Passive Skill Points from quests:")).Count);
+        Assert.Null(p.Parse("2026/08/24 23:08:19 1 a [INFO Client 1] : You have received 2 Passive Respec Points."));
+        var start = Assert.IsType<GameStarted>(p.Parse("2026/08/25 18:00:00 ***** LOG FILE OPENING *****"));
+        Assert.Equal(new DateTime(2026, 8, 24, 23, 8, 19), start.PreviousLineTime);
+    }
+
+    [Fact]
     public void Ignores_chat_lines()
     {
         var p = new LogLineParser();

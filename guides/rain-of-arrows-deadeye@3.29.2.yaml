@@ -1,13 +1,15 @@
 # Rain of Arrows Deadeye — левелінг за гайдом Maxroll (патч 3.29, автор havoc616).
-# Тексти кроків — короткий власний переказ; деталі дивіться в оригіналі (source).
-# Пасивне дерево в гайді лише картинкою, тому тут — порядок асценду; вузли дерева беріть з гайда.
-# Формат описано в README.md.
+# Маршрут кампанії (зони, квести, боси, лабіринти, спліти) — routes/campaign@3.29.yaml.
+# Тут лише кроки білда; кожен вставляється після кроку маршруту з after:.
+# Підказки без done (геми, вендори) закриваються самі, коли ви побачили їх у місті і вийшли з міста.
+# Пасивне дерево в гайді лише картинкою, тому тут — порядок асценду (відмічається сам за логом).
 
 id: rain-of-arrows-deadeye
-version: "3.29.1"
+version: "3.29.2"
 title: Rain of Arrows Deadeye
 patch: "3.29"
 source: https://maxroll.gg/poe/build-guides/rain-of-arrows-deadeye-leveling-build-guide
+route: campaign@3.29
 
 options:
   - id: main
@@ -30,373 +32,298 @@ options:
       - { id: occupying_force, label: Occupying Force }
       - { id: focal_point, label: Focal Point }
 
-timerStart: { area: "1_1_1" }
-
 steps:
   # ---------- Act 1 ----------
-  - id: a1_start
-    act: 1
-    text: "Twilight Strand: вбийте Hillock, увійдіть у Lioneye's Watch"
-    note: "Пасивне дерево — за картинкою в гайді Maxroll."
-    done: { area: "1_1_town" }
   - id: a1_l2
+    after: a1_town
     act: 1
     when: { level: 2 }
-    text: "Рів. 2: Galvanic Arrow + Momentum; Crude Bow"
+    text: "Рів. 2: Galvanic Arrow + Momentum; Crude Bow (F7 — regex)"
     regex: "-[rgb]-.-|g-g-|-g-g|g-.-g|g-g|nne|rint|serrat"
-  - id: a1_hailrake
-    act: 1
-    when: { area: "1_1_2a" }
-    text: "Tidal Island: вбийте Hailrake"
   - id: a1_l4
+    after: a1_coast
     act: 1
     when: { level: 4 }
-    text: "Рів. 4: Galvanic Arrow + Mirage Archer · Sniper's Mark · Dash; Serrated Arrow Quiver, з 5 рів. Short Bow"
+    text: "Рів. 4: Galvanic + Mirage Archer · Sniper's Mark · Dash; Serrated Quiver, з 5 рів. Short Bow"
     regex: "-[rgb]-.-|g-g-|-g-g|g-.-g|g-g|nne|rint|serrat"
   - id: a1_l4_ballista
+    after: a1_coast
     act: 1
     when: { level: 4 }
     if: { support: ballista|both }
     text: "(опц.) Shrapnel Ballista + Momentum"
-  - id: a1_dweller
+  - id: a1_portal_tip
+    after: a1_submerged
     act: 1
-    when: { area: "1_1_4_0" }
-    points: 1
-    text: "Flooded Depths: вбийте Dweller of the Deep (+1); портал на мосту Submerged Passage"
+    when: { area: "1_1_4_1" }
+    optional: true
+    text: "Портал на мосту Submerged Passage — швидше до Flooded Depths"
   - id: a1_l8
+    after: a1_lower
     act: 1
     when: { level: 8 }
     text: "Рів. 8: Galvanic + Mirage Archer + Momentum · Sniper's Mark · Frostblink"
   - id: a1_l8_manaforged
+    after: a1_lower
     act: 1
     when: { level: 8 }
     if: { support: manaforged|both }
     text: "Burning Arrow + Manaforged Arrows"
   - id: a1_l8_ballista
+    after: a1_lower
     act: 1
     when: { level: 8 }
     if: { support: ballista|both }
     text: "Shrapnel Ballista + Arrow Nova"
-  - id: a1_upper_prison
+  - id: a1_strongbox
+    after: a1_upper
     act: 1
     when: { area: "1_1_7_2" }
-    text: "Upper Prison: шукайте Chemist's Strongbox (Quicksilver), вбийте Brutus"
+    text: "Upper Prison: шукайте Chemist's Strongbox (Quicksilver Flask)"
   - id: a1_l10
+    after: a1_upper
     act: 1
     when: { level: 10 }
     text: "Рів. 10: додайте Blink Arrow; (опц.) Shield Charge + Momentum + Faster Attacks"
   - id: a1_ms_boots
+    after: a1_upper
     act: 1
+    when: { level: 10 }
     optional: true
     text: "(опц.) Чоботи на MS: Boots + Quicksilver Flask + Augmentation у вендора"
     note: "MS за рівнями: 10% з 1, 15% з 12, 20% з 24, 25% з 32, 30% з 44."
-  - id: a1_mariner
-    act: 1
-    when: { area: "1_1_9" }
-    points: 1
-    text: "Ship Graveyard: вбийте Fairgraves (+1 очко, Bestel)"
   - id: a1_l12_roa
+    after: a1_wrath
     act: 1
     when: { level: 12 }
     if: { main: rain_of_arrows }
     text: "Рів. 12: Rain of Arrows + Mirage Archer + Momentum; Galvanic → у лінк Burning Arrow + Manaforged"
   - id: a1_l12_la
+    after: a1_wrath
     act: 1
     when: { level: 12 }
     if: { main: lightning_arrow }
     text: "Рів. 12: Lightning Arrow + Mirage Archer + Momentum; Galvanic → у лінк Burning Arrow + Manaforged"
   - id: a1_bow
+    after: a1_wrath
     act: 1
+    when: { level: 12 }
     optional: true
     text: "Лук з найбільшим flat ele (Crude/Short/Long, iLvl 11–13+): Alchemy або Essence"
-  - id: a1_merveil
-    act: 1
-    when: { area: "1_1_11_2" }
-    text: "Cavern of Anger: вбийте Merveil"
 
   # ---------- Act 2 ----------
-  - id: a2_den
+  - id: a2_den_tip
+    after: a2_oldfields
     act: 2
     when: { area: "1_2_2" }
-    text: "Old Fields: портал біля входу в Den → Crossroads WP → через портал у Den, Great White Beast (Quicksilver у Yeena)"
-  - id: a2_bridge
-    act: 2
-    when: { area: "1_2_4" }
-    text: "Broken Bridge: 3 Rogue Exiles біля WP — повний сет речей"
-  - id: a2_way_forward
-    act: 2
-    when: { area: "1_2_9" }
-    points: 1
-    text: "Western Forest: Thaumetic Seal, потім у A1 до Bestel (+1, The Way Forward)"
-    note: "(опц.) У A1 докупіть ще Manaforged Arrows і Rain of Arrows для Vaal Rain of Arrows."
+    text: "Old Fields: портал біля входу в Den → Crossroads WP → через портал у Den (Great White Beast)"
   - id: a2_l16
+    after: a2_sins2
     act: 2
     when: { level: 16 }
     text: "Рів. 16: Herald of Ice; Frenzy у лінк з Manaforged; (опц.) Ensnaring Arrow, Herald of Thunder, Arctic Armour"
-  - id: a2_sacred
+  - id: a2_exiles
+    after: a2_bridge
     act: 2
-    when: { area: "1_2_5_1" }
-    points: 1
-    text: "Crypt: Golden Hand → Yeena (+1, Through Sacred Ground)"
+    when: { area: "1_2_4" }
+    text: "Broken Bridge: 3 Rogue Exiles біля WP — повний сет речей"
+  - id: a2_bandits
+    after: a2_western
+    act: 2
+    when: { area: "1_2_9" }
+    text: "Бандити: допоможіть Alira (Kraityn і Oak — вбити)"
+  - id: a2_extra_gems
+    after: a2_western
+    act: 2
+    when: { area: "1_2_9" }
+    optional: true
+    text: "(опц.) У Nessa (A1) докупіть Manaforged Arrows і Rain of Arrows для Vaal Rain of Arrows"
   - id: a2_l18
+    after: a2_weaver
     act: 2
     when: { level: 18 }
     text: "Рів. 18: Trinity або Ele Damage with Attacks безкоштовно, другий купіть (можна відкласти до 4L)"
     note: "Trinity: тримайте блискавку і вогонь/холод у схожому діапазоні, не перекачуйте одну стихію."
-  - id: a2_bandits
-    act: 2
-    text: "Bandits: допоможіть Alira"
-  - id: a2_vaal
+  - id: a2_vaal_altar
+    after: a2_vaal
     act: 2
     when: { area: "1_2_11" }
     optional: true
     text: "(опц.) Vaal Ruins: вівтар — Rain of Arrows → Vaal Rain of Arrows"
   - id: a2_bow
-    act: 2
-    optional: true
-    text: "Лук: magic/rare Composite Bow з flat ele"
-  - id: a2_oversoul
+    after: a2_pyramid
     act: 2
     when: { area: "1_2_14_3" }
-    text: "Ancient Pyramid: вбийте Vaal Oversoul"
+    optional: true
+    text: "Лук: magic/rare Composite Bow з flat ele"
 
   # ---------- Act 3 ----------
-  - id: a3_victario
+  - id: a3_l24
+    after: a3_crematorium
     act: 3
-    when: { area: "1_3_10_1" }
-    points: 1
-    text: "Sewers: 3 бюсти (+1, Victario's Secrets)"
+    when: { level: 24 }
+    text: "Рів. 24: купіть Anger; Grace безкоштовно в Maramoa (качайте в офхенді); (опц.) Haste, Heavy Belt"
   - id: a3_docks
+    after: a3_battlefront
     act: 3
     when: { area: "1_3_9" }
     optional: true
     text: "(опц.) Docks: унікальний монстр з гарантованою Essence, фарм досвіду"
-  - id: a3_l24
-    act: 3
-    when: { level: 24 }
-    text: "Рів. 24: купіть Anger; Grace безкоштовно в Maramoa (качайте в офхенді); (опц.) Haste, Heavy Belt"
-  - id: a3_solaris
+  - id: a3_solaris_craft
+    after: a3_solaris2
     act: 3
     when: { area: "1_3_8_2" }
     text: "Solaris 2: Fire крафт біля Lady Dialla; рідкий Lapis Amulet"
-  - id: a3_lunaris
-    act: 3
-    when: { area: "1_3_14_2" }
-    text: "Lunaris 2: Lightning крафт ліворуч угорі від арени Piety"
-  - id: a3_piety
-    act: 3
-    points: 1
-    text: "Lunaris 2: вбийте Piety (+1, Piety's Pets)"
-  - id: a3_craft
-    act: 3
-    when: { level: 24 }
-    text: "Скрафтіть flat ele на лук і сагайдак (T1 — 4 Transmute)"
   - id: a3_l28
+    after: a3_barracks
     act: 3
     when: { level: 28 }
     text: "Рів. 28: Storm Rain безкоштовно → у лінк з Manaforged; (опц.) Blast Rain, Artillery Ballista"
+  - id: a3_lunaris_craft
+    after: a3_lunaris2
+    act: 3
+    when: { area: "1_3_14_2" }
+    text: "Lunaris 2: Lightning крафт ліворуч угорі від арени Piety"
+  - id: a3_craft
+    after: a3_lunaris2
+    act: 3
+    when: { level: 24 }
+    text: "Скрафтіть flat ele на лук і сагайдак (T1 — 4 Transmute)"
   - id: a3_setup_roa
+    after: a3_lunaris2
     act: 3
     when: { level: 28 }
     if: { main: rain_of_arrows }
     text: "Сетап: RoA + Mirage Archer + Trinity + EDwA · Manaforged + Storm Rain + Blast Rain + Burning Arrow"
     note: "Також: Manaforged + Frenzy + Ensnaring Arrow · Sniper's Mark, Blink Arrow, Frostblink · Anger / Herald of Ice / Haste."
   - id: a3_setup_la
+    after: a3_lunaris2
     act: 3
     when: { level: 28 }
     if: { main: lightning_arrow }
     text: "Сетап: LA + Mirage Archer + Trinity + EDwA · Manaforged + Storm Rain + Blast Rain + Burning Arrow"
     note: "Також: Manaforged + Frenzy + Ensnaring Arrow · Sniper's Mark, Blink Arrow, Frostblink · Anger / Herald of Ice / Haste."
   - id: a3_library
+    after: a3_gardens
     act: 3
     when: { area: "1_3_17_1" }
     optional: true
     text: "(опц.) Library: Flame Dash замість Frostblink; (опц.) Lifetap, Arctic Armour, Focused Ballista"
-  - id: a3_lab
-    act: 3
-    text: "Normal Labyrinth: Gathering Winds"
   - id: a3_bow
-    act: 3
-    optional: true
-    text: "Лук: magic/rare Royal Bow з flat ele"
-  - id: a3_dominus
+    after: a3_upper
     act: 3
     when: { area: "1_3_18_2" }
-    text: "Upper Sceptre of God: вбийте Dominus"
+    optional: true
+    text: "Лук: magic/rare Royal Bow з flat ele"
 
   # ---------- Act 4 ----------
-  - id: a4_indomitable
-    act: 4
-    when: { area: "1_4_3_2" }
-    points: 1
-    text: "Mines 2: звільніть Deshret (+1, An Indomitable Spirit)"
   - id: a4_cold
+    after: a4_veins
     act: 4
     when: { area: "1_4_3_3" }
     text: "Crystal Veins: Cold крафт біля WP"
   - id: a4_kaom_level
+    after: a4_kaomdream
     act: 4
     when: { area: "1_4_4_1" }
     done: { level: 32 }
     text: "Набийте 32 рівень до входу в Kaom's Stronghold"
   - id: a4_l38
+    after: a4_harvest
     act: 4
     when: { level: 38 }
     text: "Рів. 38: Tornado безкоштовно в Oyun; (опц.) підтримка 38 рів. у Lady Dialla"
   - id: a4_bow
-    act: 4
-    optional: true
-    text: "Лук: magic/rare Grove, Reflex або Compound Bow"
-  - id: a4_malachai
+    after: a4_harvest
     act: 4
     when: { area: "1_4_6_3" }
-    text: "The Harvest: вбийте Malachai"
+    optional: true
+    text: "Лук: magic/rare Grove, Reflex або Compound Bow"
 
   # ---------- Act 5 ----------
   - id: a5_jade
+    after: a5_town
     act: 5
     when: { area: "1_5_town" }
-    text: "Після The Key to Freedom: Jade Flask"
-  - id: a5_science
-    act: 5
-    when: { area: "1_5_2" }
-    points: 1
-    text: "Control Blocks: Miasmeter (+1, In Service to Science)"
-  - id: a5_innocence
+    text: "Після The Key to Freedom: Jade Flask у Lani"
+  - id: a5_innocence_farm
+    after: a5_innocence
     act: 5
     when: { area: "1_5_5" }
     optional: true
     text: "(реком.) Chamber of Innocence: фарм гарантованих Magic пачок"
-  - id: a5_torments
+  - id: a5_portal
+    after: a5_ruined
     act: 5
-    when: { area: "1_5_7" }
-    points: 1
-    text: "Reliquary: 3 Kitava's Torments (+1); перед цим портал біля входу на Cathedral Rooftop"
-  - id: a5_kitava
-    act: 5
-    when: { area: "1_5_8" }
-    text: "Cathedral Rooftop: вбийте Kitava"
+    when: { area: "1_5_3b" }
+    text: "Перед Reliquary: портал біля входу на Cathedral Rooftop"
 
   # ---------- Act 6 ----------
-  - id: a6_strand
+  - id: a6_strand_tip
+    after: a6_strand
     act: 6
     when: { area: "2_6_1" }
-    text: "Twilight Strand: якщо Library пройдено — пропустіть Lily Roth і зачистіть пляж"
-    note: "Інакше в Lily Roth: Flame Dash замість Frostblink; (опц.) Lifetap, Arctic Armour, Focused Ballista."
+    text: "Якщо Library пройдено — пропустіть Lily Roth; інакше в неї Flame Dash, (опц.) Lifetap, Arctic Armour"
   - id: a6_bow
+    after: a6_strand
     act: 6
+    when: { area: "2_6_1" }
     optional: true
     text: "Лук на A6–10: Ivory/Highborn/Thicket/Spine/Imperial; під крит — Sniper/Ivory/Assassin/Spine"
-  - id: a6_father
-    act: 6
-    when: { area: "2_6_5" }
-    points: 1
-    text: "Karui Fortress: вбийте Tukohama (+1, The Father of War)"
-  - id: a6_cloven
-    act: 6
-    when: { area: "2_6_8" }
-    points: 1
-    text: "Prisoner's Gate: вбийте Abberath (+1, The Cloven One)"
-  - id: a6_puppet
-    act: 6
-    when: { area: "2_6_11" }
-    points: 1
-    text: "Wetlands: вбийте Ryslatha (+1, The Puppet Mistress)"
-  - id: a6_pantheon
-    act: 6
-    when: { area: "2_6_15" }
-    text: "Пантеон: major — Brine King, minor — Ryslatha; у Beacon портал для безпеки"
 
   # ---------- Act 7 ----------
-  - id: a7_locket
+  - id: a7_pantheon
+    after: a7_town
     act: 7
     when: { area: "2_7_town" }
-    text: "Після The Silver Locket: Diamond Flask"
-  - id: a7_sins
+    text: "Пантеон: major — Soul of the Brine King, minor — Ryslatha"
+  - id: a7_locket
+    after: a7_bridge
+    act: 7
+    when: { area: "2_7_1" }
+    text: "Після The Silver Locket: Diamond Flask у Weylam"
+  - id: a7_sins_craft
+    after: a7_sins1
     act: 7
     when: { area: "2_7_5_1" }
     text: "Chamber of Sins 1: Lightning T2 крафт біля WP (2 Alchemy)"
-  - id: a7_master
-    act: 7
-    when: { area: "2_7_5_map" }
-    points: 1
-    text: "Maligaro's Sanctum: вбийте Maligaro (+1, The Master of a Million Faces)"
-  - id: a7_queen
-    act: 7
-    when: { area: "2_7_7" }
-    points: 1
-    text: "Ashen Fields: вбийте Gruthkul (+1, Queen of Despair)"
-  - id: a7_dread
+  - id: a7_dread_craft
+    after: a7_dread
     act: 7
     when: { area: "2_7_9" }
     text: "Dread Thicket: Fire T2 крафт біля Dreadstone; портал біля входу для Greust"
-  - id: a7_kishara
+  - id: a7_causeway_craft
+    after: a7_causeway
     act: 7
     when: { area: "2_7_10" }
-    points: 1
-    text: "Causeway: Kishara's Star (+1)"
-  - id: a7_causeway_cold
-    act: 7
     text: "Causeway: Cold T2 крафт біля WP (2 Alchemy)"
-  - id: a7_arakaali
-    act: 7
-    when: { area: "2_7_12_2" }
-    text: "Temple of Decay 2: вбийте Arakaali"
 
   # ---------- Act 8 ----------
   - id: a8_arctic
+    after: a8_ramparts
     act: 8
     when: { area: "2_8_1" }
     text: "Act 8: Arctic Armour у зонах з холодом"
-  - id: a8_lab_of
+  - id: a8_grace
+    after: a8_bath
     act: 8
-    if: { ascendancy: occupying_force }
-    text: "Cruel Labyrinth: Occupying Force"
-  - id: a8_lab_fp
-    act: 8
-    if: { ascendancy: focal_point }
-    text: "Cruel Labyrinth: Focal Point"
-  - id: a8_love
-    act: 8
-    when: { area: "2_8_8" }
-    points: 1
-    text: "Quay: Ankh of Eternity → Clarissa (+1, Love is Dead)"
-  - id: a8_gemling
-    act: 8
-    when: { area: "2_8_9" }
-    points: 1
-    text: "Grain Gate: Gemling Legion (+1)"
-  - id: a8_yugul
-    act: 8
-    when: { area: "2_8_4" }
-    points: 1
-    text: "High Gardens: увімкніть Grace, вбийте Yugul (+1, Reflection of Terror)"
-  - id: a8_harbour
+    when: { area: "2_8_5" }
+    text: "High Gardens: увімкніть Grace перед Yugul"
+  - id: a8_harbour_tip
+    after: a8_harbour
     act: 8
     when: { area: "2_8_13" }
+    optional: true
     text: "Harbour Bridge: при поверненні Ctrl+клік по входу — новий інстанс заради досвіду"
 
   # ---------- Act 9 ----------
-  - id: a9_aqueduct
-    act: 9
-    when: { area: "2_9_1" }
-    optional: true
-    text: "(опц.) Blood Aqueduct: можна фармити перед мапами"
   - id: a9_storm_blade
+    after: a9_desert
     act: 9
     when: { area: "2_9_3" }
     text: "Після The Storm Blade: рідкий Spike-Point Arrow Quiver"
-  - id: a9_queen
-    act: 9
-    when: { area: "2_9_4" }
-    points: 1
-    text: "Oasis: вбийте Shakari (+1, Queen of the Sands)"
-  - id: a9_ruler
-    act: 9
-    when: { area: "2_9_8" }
-    points: 1
-    text: "Quarry: вбийте Garukhan (+1, The Ruler of Highgate)"
-  - id: a9_belly
+  - id: a9_belly_tip
+    after: a9_belly
     act: 9
     when: { area: "2_9_10_1" }
     optional: true
@@ -404,105 +331,52 @@ steps:
 
   # ---------- Act 10 ----------
   - id: a10_silver
+    after: a10_rooftop
     act: 10
     when: { area: "2_10_1" }
     text: "Після Safe Passage (Bannon): Silver Flask"
-  - id: a10_ravaged
+  - id: a10_ravaged_tip
+    after: a10_ravaged
     act: 10
     when: { area: "2_10_2" }
     text: "Ravaged Square: портал біля входу, WP у місто, через портал на південь до Control Blocks"
-  - id: a10_vilenta
-    act: 10
-    when: { area: "2_10_7" }
-    points: 1
-    text: "Control Blocks: вбийте Vilenta (+1, Vilenta's Vengeance)"
   - id: a10_rebirth
+    after: a10_chambers
     act: 10
     when: { area: "2_10_4" }
     text: "Після Death and Rebirth: рідкий Zodiac Leather або Blood Raiment"
-  - id: a10_kitava
-    act: 10
-    when: { area: "2_10_6" }
-    points: 1
-    text: "Feeding Trough: вбийте Kitava (+1, An End to Hunger)"
-  - id: a10_lab_of
-    act: 10
-    if: { ascendancy: occupying_force }
-    text: "Merciless Labyrinth: Focal Point"
-  - id: a10_lab_fp
-    act: 10
-    if: { ascendancy: focal_point }
-    text: "Merciless Labyrinth: Far Shot"
 
 tree:
   - id: gathering_winds
     name: "Асценд: Gathering Winds"
     hint: "після Normal Lab"
-    when: { step: a3_lab }
+    when: { ascendancy: 2 }
+    passives: ["Gathering Winds"]
   - id: occupying_force
     name: "Асценд: Occupying Force"
     hint: "після Cruel Lab"
-    when: { step: a8_lab_of }
+    when: { ascendancy: 4 }
     if: { ascendancy: occupying_force }
+    passives: ["Occupying Force"]
   - id: focal_point_cruel
     name: "Асценд: Focal Point"
     hint: "після Cruel Lab"
-    when: { step: a8_lab_fp }
+    when: { ascendancy: 4 }
     if: { ascendancy: focal_point }
+    passives: ["Focal Point"]
   - id: focal_point_merc
     name: "Асценд: Focal Point"
     hint: "після Merciless Lab"
-    when: { step: a10_lab_of }
+    when: { ascendancy: 6 }
     if: { ascendancy: occupying_force }
+    passives: ["Focal Point"]
   - id: far_shot
     name: "Асценд: Far Shot"
     hint: "після Merciless Lab"
-    when: { step: a10_lab_fp }
+    when: { ascendancy: 6 }
     if: { ascendancy: focal_point }
+    passives: ["Far Shot"]
   - id: endless_munitions
     name: "Асценд: Endless Munitions (Uber Lab)"
     optional: true
-
-splits:
-  - id: start_town
-    label: Lioneye's Watch
-    on: { step: a1_start }
-  - id: lvl12
-    label: Рівень 12
-    on: { level: 12 }
-  - id: act1
-    label: Кінець Act 1
-    on: { area: "1_2_town" }
-  - id: act2
-    label: Кінець Act 2
-    on: { area: "1_3_town" }
-  - id: lvl24
-    label: Рівень 24
-    on: { level: 24 }
-  - id: lvl28
-    label: Рівень 28
-    on: { level: 28 }
-  - id: act3
-    label: Кінець Act 3
-    on: { area: "1_4_town" }
-  - id: act4
-    label: Кінець Act 4
-    on: { area: "1_5_town" }
-  - id: act5
-    label: Кінець Act 5
-    on: { area: "2_6_town" }
-  - id: act6
-    label: Кінець Act 6
-    on: { area: "2_7_town" }
-  - id: act7
-    label: Кінець Act 7
-    on: { area: "2_8_1" }
-  - id: act8
-    label: Кінець Act 8
-    on: { area: "2_9_1" }
-  - id: act9
-    label: Кінець Act 9
-    on: { area: "2_10_town" }
-  - id: finish
-    label: Фініш (Karui Shores)
-    on: { area: "2_11_endgame_town" }
+    passives: ["Endless Munitions"]

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <None Include="..\..\guides\*.yaml" Link="Guides\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\guides\routes\*.yaml" Link="Guides\routes\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

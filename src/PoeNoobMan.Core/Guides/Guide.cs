@@ -7,6 +7,14 @@ public sealed class Guide
     public string Title { get; set; } = "";
     public string? Patch { get; set; }
     public string? Source { get; set; }
+
+    /// <summary>
+    /// Спільний маршрут кампанії з папки routes/ (наприклад "campaign@3.29"). Його кроки йдуть першими,
+    /// кроки гайда вставляються після кроку, вказаного в <see cref="GuideStep.After"/>.
+    /// Якщо в гайді немає сплітів чи старту таймера, беруться з маршруту.
+    /// </summary>
+    public string? Route { get; set; }
+
     public List<GuideOption> Options { get; set; } = [];
     public List<GuideStep> Steps { get; set; } = [];
     public List<TreeNode> Tree { get; set; } = [];
@@ -42,7 +50,13 @@ public sealed class Condition
     /// <summary>ID кроку, який має бути виконаний.</summary>
     public string? Step { get; set; }
 
-    public bool IsEmpty => Level is null && Points is null && Area is null && Step is null;
+    /// <summary>Пасивку з такою назвою взято (рядок "Successfully allocated passive skill ... name: X").</summary>
+    public string? Passive { get; set; }
+
+    /// <summary>Взято щонайменше стільки очок асценду: 2 — Normal Lab, 4 — Cruel, 6 — Merciless.</summary>
+    public int? Ascendancy { get; set; }
+
+    public bool IsEmpty => Level is null && Points is null && Area is null && Step is null && Passive is null && Ascendancy is null;
 
     public override string ToString()
     {
@@ -50,7 +64,9 @@ public sealed class Condition
         if (Level is { } l) parts.Add($"з {l} рівня");
         if (Points is { } p) parts.Add($"при {p} очках");
         if (Area is { } a) parts.Add($"у зоні {Log.AreaNames.Display(a)}");
-        if (Step is { } s) parts.Add($"після кроку {s}");
+        if (Step is not null) parts.Add("після попереднього етапу");
+        if (Passive is { } n) parts.Add($"після {n}");
+        if (Ascendancy is { } asc) parts.Add(asc switch { <= 2 => "після Normal Lab", <= 4 => "після Cruel Lab", <= 6 => "після Merciless Lab", _ => $"{asc} очок асценду" });
         return parts.Count == 0 ? "вручну" : string.Join(", ", parts);
     }
 }
@@ -62,17 +78,23 @@ public sealed class GuideStep
     public string Text { get; set; } = "";
     public string? Note { get; set; }
 
-    /// <summary>Коли крок з'являється. Без умови з'являється одразу за попереднім.</summary>
+    /// <summary>Коли крок з'являється. Без умови — щойно гравець дійшов до його акту.</summary>
     public Condition? When { get; set; }
 
-    /// <summary>Коли крок відмічається сам. Без умови відмічається вручну.</summary>
+    /// <summary>
+    /// Коли крок закривається сам. Без умови крок — підказка: закривається, коли її показали в місті
+    /// і гравець вийшов з міста (купив, що треба, і пішов далі).
+    /// </summary>
     public Condition? Done { get; set; }
 
     /// <summary>Фільтр за опціями: optionId → choiceId (кілька варіантів через "|").</summary>
     public Dictionary<string, string>? If { get; set; }
 
-    /// <summary>Скільки очок дерева дає крок (нагорода за квест).</summary>
+    /// <summary>Скільки очок дерева дає крок (нагорода за квест); закривається рядком про отримане очко.</summary>
     public int Points { get; set; }
+
+    /// <summary>Для кроків гайда з маршрутом: id кроку маршруту, після якого вставити цей крок.</summary>
+    public string? After { get; set; }
 
     public string? Regex { get; set; }
     public bool Optional { get; set; }
@@ -87,6 +109,12 @@ public sealed class TreeNode
 
     /// <summary>Як показувати умову замість автоматичного тексту, наприклад "після Normal Lab".</summary>
     public string? Hint { get; set; }
+
+    /// <summary>
+    /// Назви пасивок так, як їх пише гра в Client.txt ("Heart and Soul", "Fire Mastery"). Нода відмічається сама,
+    /// коли взято всі (для refund — коли всі зняли). Без списку нода відмічається вручну.
+    /// </summary>
+    public List<string>? Passives { get; set; }
 
     public Dictionary<string, string>? If { get; set; }
     public bool Refund { get; set; }

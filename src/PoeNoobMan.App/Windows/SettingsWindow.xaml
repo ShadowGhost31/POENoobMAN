@@ -334,6 +334,9 @@
                                 <CheckBox x:Name="TimerEnabled" Content="Показувати таймер над грою" />
                                 <CheckBox x:Name="TimerAutoStart" Content="Стартувати автоматично при вході в Twilight Strand (Act 1)" Margin="0,6,0,0" />
                                 <CheckBox x:Name="TimerShowNext" Content="Показувати рядок «Далі» з часом рекорду" Margin="0,6,0,0" />
+                                <CheckBox x:Name="TimerRemoveLoads" Content="Не рахувати екрани завантаження (як у спідранерів)" Margin="0,6,0,0" />
+                                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                                           Text="Час, коли гра закрита, не рахується ніколи. Спліти на босах ставляться при вході в зону, яку бос відкриває: гра не пише вбивство боса в Client.txt." />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}">

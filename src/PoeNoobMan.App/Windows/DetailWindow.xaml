@@ -85,6 +85,11 @@
                                         <DataTrigger Binding="{Binding IsDone}" Value="True">
                                             <Setter TargetName="StepText" Property="Foreground" Value="{StaticResource OverlayDim}" />
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPassed}" Value="True">
+                                            <Setter TargetName="StepText" Property="Foreground" Value="{StaticResource OverlayDim}" />
+                                            <Setter TargetName="StepText" Property="FontStyle" Value="Italic" />
+                                            <Setter TargetName="Row" Property="ToolTip" Value="Пропущено: ви вже пройшли далі за гайдом" />
+                                        </DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

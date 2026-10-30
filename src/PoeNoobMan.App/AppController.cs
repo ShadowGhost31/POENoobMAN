@@ -9,6 +9,7 @@ using PoeNoobMan.Core.Log;
 using PoeNoobMan.Core.Progress;
 using PoeNoobMan.Core.Splits;
 using PoeNoobMan.Core.Storage;
+using PoeNoobMan.Core.Tracking;
 
 namespace PoeNoobMan.App;
 
@@ -44,7 +45,17 @@ public sealed class AppController : IDisposable
         Guides.Reload();
 
         Game = new GameWindowTracker(dispatcher);
-        Game.Changed += _ => UpdateWindows();
+        Game.Changed += g =>
+        {
+            // Поки гри немає, час забігу не йде (той самий проміжок видно і з логу при наступному запуску гри)
+            if (Tracker is { IsRunning: true } t)
+            {
+                if (g.Found) t.EndPause(DateTime.Now);
+                else t.BeginPause(DateTime.Now);
+                SaveRun();
+            }
+            UpdateWindows();
+        };
 
         _clock = new DispatcherTimer(TimeSpan.FromMilliseconds(500), DispatcherPriority.Normal, (_, _) => OnClock(), dispatcher);
         _guidesDebounce = new DispatcherTimer(TimeSpan.FromMilliseconds(600), DispatcherPriority.Normal, (_, _) => OnGuidesFolderChanged(), dispatcher);
@@ -275,6 +286,7 @@ public sealed class AppController : IDisposable
             View = null;
             Engine = null;
             Tracker = null;
+            Session = null;
             RaiseChanged();
             return;
         }
@@ -283,13 +295,28 @@ public sealed class AppController : IDisposable
         Settings.GuideVersion = guide.Version;
         View = GuideView.Create(guide, Settings.OptionsFor(guide.Id));
         Engine = new ProgressEngine(View, _progressStore.Load(guide.Id, Settings.CharacterName));
+        Engine.RestoreCurrentArea();
         Engine.Recompute();
 
         var current = _runStore.LoadCurrent();
-        Tracker = new SplitTracker(View.Splits, LoadHistory(guide.Id));
+        Tracker = new SplitTracker(View.Splits, LoadHistory(guide.Id)) { RemoveLoads = Settings.Timer.RemoveLoads };
         if (current?.GuideId == guide.Id) Tracker.Load(current);
+
+        Session = new TrackingSession(Engine, Tracker)
+        {
+            CharacterName = Settings.CharacterName,
+            TimerEnabled = Settings.Timer.Enabled,
+            AutoStart = Settings.Timer.AutoStart,
+            StartRun = StartRun,
+        };
+        Session.CharacterSeen += name =>
+        {
+            if (!_logState.SeenCharacters.Contains(name)) _logState.SeenCharacters.Add(name);
+        };
         RaiseChanged();
     }
+
+    public TrackingSession? Session { get; private set; }
 
     private List<RunRecord> LoadHistory(string guideId)
     {
@@ -333,7 +360,7 @@ public sealed class AppController : IDisposable
 
     private void AfterChange(IReadOnlyList<string> doneSteps, DateTime time)
     {
-        foreach (var id in doneSteps) Tracker?.OnTrigger(new SplitTrigger(TriggerKind.Step, time, id), Engine?.State.Level ?? 1);
+        Session?.StepsDone(doneSteps, time);
         SaveProgress();
         SaveRun();
         RaiseChanged();
@@ -469,36 +496,12 @@ public sealed class AppController : IDisposable
 
     public bool LogFound => _logWatcher is not null;
 
-    private bool IsOurCharacter(string name) =>
-        string.IsNullOrWhiteSpace(Settings.CharacterName) || string.Equals(name, Settings.CharacterName, StringComparison.OrdinalIgnoreCase);
-
     private void OnLogEvents(IReadOnlyList<LogEvent> events, long offset)
     {
         foreach (var ev in events)
         {
-            switch (ev)
-            {
-                case AreaEntered a:
-                    if (Settings.Timer.Enabled && Settings.Timer.AutoStart && Tracker is { IsRunning: false }
-                        && View?.Guide.TimerStart?.Area is { } startArea && ProgressEngine.AreaMatches(startArea, a.AreaId, a.AreaName))
-                        StartRun(a.Time);
-                    var byArea = Engine?.OnAreaEntered(a.AreaId, a.AreaName) ?? [];
-                    Tracker?.OnTrigger(new SplitTrigger(TriggerKind.Area, a.Time, a.AreaId, a.AreaName), Engine?.State.Level ?? 1);
-                    foreach (var id in byArea) Tracker?.OnTrigger(new SplitTrigger(TriggerKind.Step, a.Time, id), Engine?.State.Level ?? 1);
-                    break;
-
-                case LevelUp l:
-                    if (!_logState.SeenCharacters.Contains(l.Character)) _logState.SeenCharacters.Add(l.Character);
-                    if (!IsOurCharacter(l.Character) || Engine is null) break;
-                    var byLevel = Engine.SetLevel(l.Level);
-                    Tracker?.OnTrigger(new SplitTrigger(TriggerKind.Level, l.Time, Level: l.Level), l.Level);
-                    foreach (var id in byLevel) Tracker?.OnTrigger(new SplitTrigger(TriggerKind.Step, l.Time, id), l.Level);
-                    break;
-
-                case CharacterSlain s when IsOurCharacter(s.Character):
-                    Tracker?.AddDeath();
-                    break;
-            }
+            if (Session is not null) Session.Handle(ev);
+            else if (ev is LevelUp l && !_logState.SeenCharacters.Contains(l.Character)) _logState.SeenCharacters.Add(l.Character);
         }
 
         _logState.Offset = offset;

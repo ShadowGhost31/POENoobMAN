@@ -11,6 +11,19 @@ public sealed partial class LogLineParser
 {
     private string? _pendingAreaId;
     private int? _pendingAreaLevel;
+    private DateTime? _lastTime;
+
+    [GeneratedRegex(@"\] : You have received (a|an|\d+) Passive Skill Points?\.\s*$")]
+    private static partial Regex PassiveRegex();
+
+    [GeneratedRegex(@"\] : (\d+) Passive Skill Points? from quests")]
+    private static partial Regex QuestPointsRegex();
+
+    [GeneratedRegex(@"\] Successfully (allocated|unallocated) passive skill id: ([^,]*), name: (.+?)\s*$")]
+    private static partial Regex AllocatedRegex();
+
+    [GeneratedRegex(@"\[LOADING SCREEN\] \(.*\) Duration = ([\d.]+) seconds")]
+    private static partial Regex LoadingRegex();
 
     [GeneratedRegex(@"^(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})")]
     private static partial Regex TimestampRegex();
@@ -32,6 +45,15 @@ public sealed partial class LogLineParser
         var ts = TimestampRegex().Match(line);
         if (!ts.Success) return null;
         var time = DateTime.ParseExact(ts.Groups[1].Value, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+        var previous = _lastTime;
+        _lastTime = time;
+
+        if (line.Contains("***** LOG FILE OPENING *****", StringComparison.Ordinal))
+        {
+            _pendingAreaId = null;
+            _pendingAreaLevel = null;
+            return new GameStarted(time, previous);
+        }
 
         var m = GeneratingRegex().Match(line);
         if (m.Success)
@@ -57,6 +79,25 @@ public sealed partial class LogLineParser
         m = SlainRegex().Match(line);
         if (m.Success)
             return new CharacterSlain(time, m.Groups[1].Value);
+
+        m = PassiveRegex().Match(line);
+        if (m.Success)
+        {
+            var count = int.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 1;
+            return new PassivePointsReceived(time, count);
+        }
+
+        m = QuestPointsRegex().Match(line);
+        if (m.Success)
+            return new QuestPointsReported(time, int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture));
+
+        m = LoadingRegex().Match(line);
+        if (m.Success && double.TryParse(m.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var load))
+            return new LoadingScreen(time, load);
+
+        m = AllocatedRegex().Match(line);
+        if (m.Success)
+            return new PassiveAllocated(time, m.Groups[2].Value, m.Groups[3].Value, m.Groups[1].Value == "allocated");
 
         return null;
     }

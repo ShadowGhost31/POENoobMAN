@@ -21,11 +21,16 @@ public sealed record TimerSnapshot(
     string? NextLabel,
     TimeSpan? NextCompare,
     TimerTone Tone,
-    int Deaths);
+    int Deaths,
+    bool Paused = false);
 
 public sealed record SplitRow(SplitDef Def, double? Current, double? Last, double? Best, double? SumOfBest, bool Recorded);
 
-/// <summary>Таймер забігу зі сплітами, як у спідранерів. Логіка без інтерфейсу.</summary>
+/// <summary>
+/// Таймер забігу зі сплітами, як у спідранерів. Кожен спліт фіксується, коли вперше стається його подія,
+/// незалежно від порядку: якщо рівень 12 набрано вже в Act 2, спліт «Рівень 12» усе одно зафіксується.
+/// Забіг завершується останнім сплітом гайда.
+/// </summary>
 public sealed class SplitTracker
 {
     private IReadOnlyList<SplitDef> _defs;
@@ -44,9 +49,12 @@ public sealed class SplitTracker
     public RunRecord? Current { get; private set; }
     public bool IsRunning => Current is { Finished: false };
 
-    public void SetDefs(IReadOnlyList<SplitDef> defs) => _defs = defs;
-
-    public void Load(RunRecord? current) => Current = current;
+    public void Load(RunRecord? current)
+    {
+        // Старі записи могли містити пропущені спліти без часу
+        current?.Splits.RemoveAll(s => s.Seconds is null);
+        Current = current;
+    }
 
     public void SetHistory(IReadOnlyList<RunRecord> history)
     {
@@ -56,14 +64,18 @@ public sealed class SplitTracker
         _sumOfBest = new();
 
         var pb = history.Where(r => r.TotalSeconds is not null).MinBy(r => r.TotalSeconds);
-        if (pb is not null) _pb = Cumulative(pb);
+        if (pb is not null) _pb = Times(pb);
 
         var last = history.Where(r => r.Splits.Any(s => s.Seconds is not null)).MaxBy(r => r.StartedAt);
-        if (last is not null) _last = Cumulative(last);
+        if (last is not null) _last = Times(last);
 
         foreach (var run in history)
-            foreach (var (id, seg) in Segments(run))
-                if (!_bestSegment.TryGetValue(id, out var best) || seg < best) _bestSegment[id] = seg;
+        {
+            var times = Times(run);
+            for (var i = 0; i < _defs.Count; i++)
+                if (SegmentOf(times, i) is { } seg && (!_bestSegment.TryGetValue(_defs[i].Id, out var best) || seg < best))
+                    _bestSegment[_defs[i].Id] = seg;
+        }
 
         double sum = 0;
         foreach (var d in _defs)
@@ -84,30 +96,32 @@ public sealed class SplitTracker
             Character = character,
             Options = new Dictionary<string, string>(options),
             StartedAt = at,
+            LoadsRemoved = RemoveLoads,
         };
     }
 
-    /// <summary>
-    /// Фіксує спліт, якщо подія відповідає наступному або одному з пізніших сплітів.
-    /// Проміжні спліти тоді позначаються пропущеними.
-    /// </summary>
+    /// <summary>Фіксує всі ще не зафіксовані спліти, яким відповідає подія.</summary>
     public bool OnTrigger(SplitTrigger t, int level)
     {
-        if (Current is not { Finished: false } run) return false;
-        for (var i = run.Splits.Count; i < _defs.Count; i++)
+        if (Current is not { Finished: false } run || t.Time < run.StartedAt) return false;
+        var any = false;
+        foreach (var def in _defs)
         {
-            if (!Matches(_defs[i].On, t)) continue;
-            while (run.Splits.Count < i) run.Splits.Add(new SplitTime { Id = _defs[run.Splits.Count].Id, Level = level, Deaths = run.Deaths });
-            Record(run, t.Time, level);
-            return true;
+            if (run.Finished) break;
+            if (IsRecorded(run, def.Id) || !Matches(def.On, t)) continue;
+            Record(run, def, t.Time, level);
+            any = true;
         }
-        return false;
+        return any;
     }
 
+    /// <summary>Ручний спліт: перший ще не зафіксований спліт за порядком гайда.</summary>
     public bool ManualSplit(DateTime now, int level)
     {
-        if (Current is not { Finished: false } run || run.Splits.Count >= _defs.Count) return false;
-        Record(run, now, level);
+        if (Current is not { Finished: false } run) return false;
+        var next = _defs.FirstOrDefault(d => !IsRecorded(run, d.Id));
+        if (next is null) return false;
+        Record(run, next, now, level);
         return true;
     }
 
@@ -115,7 +129,6 @@ public sealed class SplitTracker
     {
         if (Current is not { } run || run.Splits.Count == 0) return false;
         run.Splits.RemoveAt(run.Splits.Count - 1);
-        while (run.Splits.Count > 0 && run.Splits[^1].Seconds is null) run.Splits.RemoveAt(run.Splits.Count - 1);
         run.Finished = false;
         run.EndedAt = null;
         return true;
@@ -134,75 +147,104 @@ public sealed class SplitTracker
         if (IsRunning) Current!.Deaths++;
     }
 
+    /// <summary>Чи віднімати завантаження в нових забігах.</summary>
+    public bool RemoveLoads { get; set; } = true;
+
+    public void AddLoad(double seconds)
+    {
+        if (Current is { Finished: false } run && !run.IsPaused && seconds is > 0 and < 600) run.LoadSeconds += seconds;
+    }
+
+    /// <summary>Гра закрилася (вікно зникло): час не рахується до <see cref="EndPause"/>.</summary>
+    public void BeginPause(DateTime at)
+    {
+        if (Current is { Finished: false } run && !run.IsPaused) run.Pauses.Add(new PauseInterval { From = at });
+    }
+
+    public void EndPause(DateTime at)
+    {
+        if (Current?.Pauses.LastOrDefault(p => p.To is null) is { } open) open.To = at < open.From ? open.From : at;
+    }
+
+    /// <summary>Проміжок, коли гра була закрита, відомий заднім числом (з логу при наступному запуску гри).</summary>
+    public void AddPause(DateTime from, DateTime to)
+    {
+        if (Current is { Finished: false } run && to > from && to > run.StartedAt)
+            run.Pauses.Add(new PauseInterval { From = from, To = to });
+    }
+
     public TimerSnapshot Snapshot(DateTime now, Comparison comparison)
     {
         if (Current is not { } run)
-            return new TimerSnapshot(false, false, TimeSpan.Zero, null, null, null, false, _defs.FirstOrDefault()?.Label, CompareAt(comparison, 0), TimerTone.Neutral, 0);
+            return new TimerSnapshot(false, false, TimeSpan.Zero, null, null, null, false, _defs.FirstOrDefault()?.Label, CompareFor(comparison, _defs.FirstOrDefault()), TimerTone.Neutral, 0);
 
-        var elapsed = (run.Finished && run.EndedAt is { } end ? end : now) - run.StartedAt;
-        if (elapsed < TimeSpan.Zero) elapsed = TimeSpan.Zero;
+        var elapsed = TimeSpan.FromSeconds(Math.Floor(run.ActiveSeconds(run.Finished && run.EndedAt is { } end ? end : now)));
 
-        var lastIndex = run.Splits.FindLastIndex(s => s.Seconds is not null);
+        var times = Times(run);
         string? lastLabel = null;
         TimeSpan? lastTime = null, lastDelta = null;
         var gold = false;
-        if (lastIndex >= 0 && lastIndex < _defs.Count)
+        if (run.Splits.LastOrDefault(s => s.Seconds is not null) is { } last && IndexOf(last.Id) is { } lastIndex)
         {
-            var split = run.Splits[lastIndex];
-            lastLabel = _defs[lastIndex].Label;
-            lastTime = TimeSpan.FromSeconds(split.Seconds!.Value);
-            if (CompareAt(comparison, lastIndex) is { } cmp) lastDelta = lastTime - cmp;
-            gold = SegmentOf(run, lastIndex) is { } seg && _bestSegment.TryGetValue(split.Id, out var best) && seg < best;
+            var def = _defs[lastIndex];
+            lastLabel = def.Label;
+            lastTime = TimeSpan.FromSeconds(last.Seconds!.Value);
+            if (CompareFor(comparison, def) is { } cmp) lastDelta = lastTime - cmp;
+            gold = SegmentOf(times, lastIndex) is { } seg && _bestSegment.TryGetValue(def.Id, out var best) && seg < best;
         }
 
-        var nextIndex = run.Splits.Count;
-        var nextLabel = !run.Finished && nextIndex < _defs.Count ? _defs[nextIndex].Label : null;
-        var nextCompare = nextLabel is null ? null : CompareAt(comparison, nextIndex);
+        var next = run.Finished ? null : _defs.FirstOrDefault(d => !times.ContainsKey(d.Id));
+        var nextCompare = next is null ? null : CompareFor(comparison, next);
 
         var tone = TimerTone.Neutral;
         if (nextCompare is { } nc && elapsed > nc) tone = TimerTone.Behind;
         else if (lastDelta is { } d) tone = d <= TimeSpan.Zero ? TimerTone.Ahead : TimerTone.Behind;
 
-        return new TimerSnapshot(true, run.Finished, elapsed, lastLabel, lastTime, lastDelta, gold, nextLabel, nextCompare, tone, run.Deaths);
+        return new TimerSnapshot(true, run.Finished, elapsed, lastLabel, lastTime, lastDelta, gold, next?.Label, nextCompare, tone, run.Deaths, run.IsPaused);
     }
 
     public IReadOnlyList<SplitRow> Rows()
     {
-        var rows = new List<SplitRow>();
-        for (var i = 0; i < _defs.Count; i++)
-        {
-            var d = _defs[i];
-            var recorded = Current is { } run && i < run.Splits.Count;
-            rows.Add(new SplitRow(d, recorded ? Current!.Splits[i].Seconds : null,
-                _last.TryGetValue(d.Id, out var l) ? l : null,
-                _pb.TryGetValue(d.Id, out var p) ? p : null,
-                _sumOfBest.TryGetValue(d.Id, out var s) ? s : null,
-                recorded));
-        }
-        return rows;
+        var times = Current is { } run ? Times(run) : new Dictionary<string, double>();
+        return _defs.Select(d => new SplitRow(d,
+            times.TryGetValue(d.Id, out var c) ? c : null,
+            _last.TryGetValue(d.Id, out var l) ? l : null,
+            _pb.TryGetValue(d.Id, out var p) ? p : null,
+            _sumOfBest.TryGetValue(d.Id, out var s) ? s : null,
+            times.ContainsKey(d.Id))).ToList();
     }
 
-    private TimeSpan? CompareAt(Comparison comparison, int index)
+    private TimeSpan? CompareFor(Comparison comparison, SplitDef? def)
     {
-        if (index < 0 || index >= _defs.Count) return null;
+        if (def is null) return null;
         var source = comparison switch
         {
             Comparison.LastRun => _last,
             Comparison.SumOfBest => _sumOfBest,
             _ => _pb,
         };
-        return source.TryGetValue(_defs[index].Id, out var s) ? TimeSpan.FromSeconds(s) : null;
+        return source.TryGetValue(def.Id, out var s) ? TimeSpan.FromSeconds(s) : null;
     }
 
-    private void Record(RunRecord run, DateTime at, int level)
+    private void Record(RunRecord run, SplitDef def, DateTime at, int level)
     {
-        var seconds = Math.Max(0, (at - run.StartedAt).TotalSeconds);
-        run.Splits.Add(new SplitTime { Id = _defs[run.Splits.Count].Id, Seconds = seconds, Level = level, Deaths = run.Deaths });
-        if (run.Splits.Count == _defs.Count)
+        var seconds = run.ActiveSeconds(at);
+        run.Splits.Add(new SplitTime { Id = def.Id, Seconds = seconds, Level = level, Deaths = run.Deaths });
+        if (ReferenceEquals(def, _defs[^1]))
         {
             run.Finished = true;
-            run.EndedAt = run.StartedAt.AddSeconds(seconds);
+            run.EndedAt = at;
+            EndPause(at);
         }
+    }
+
+    private static bool IsRecorded(RunRecord run, string id) => run.Splits.Any(s => s.Id == id && s.Seconds is not null);
+
+    private int? IndexOf(string id)
+    {
+        for (var i = 0; i < _defs.Count; i++)
+            if (_defs[i].Id == id) return i;
+        return null;
     }
 
     private static bool Matches(Condition on, SplitTrigger t) => t.Kind switch
@@ -213,20 +255,15 @@ public sealed class SplitTracker
         _ => false,
     };
 
-    private static Dictionary<string, double> Cumulative(RunRecord run) =>
+    private static Dictionary<string, double> Times(RunRecord run) =>
         run.Splits.Where(s => s.Seconds is not null).GroupBy(s => s.Id).ToDictionary(g => g.Key, g => g.First().Seconds!.Value);
 
-    private static double? SegmentOf(RunRecord run, int index)
+    /// <summary>Сегмент — час від попереднього спліту гайда; якщо попередній не зафіксовано або події йшли не по порядку, сегмента немає.</summary>
+    private double? SegmentOf(Dictionary<string, double> times, int index)
     {
-        if (run.Splits[index].Seconds is not { } t) return null;
+        if (!times.TryGetValue(_defs[index].Id, out var t)) return null;
         if (index == 0) return t;
-        return run.Splits[index - 1].Seconds is { } prev ? t - prev : null;
-    }
-
-    private static IEnumerable<(string Id, double Segment)> Segments(RunRecord run)
-    {
-        for (var i = 0; i < run.Splits.Count; i++)
-            if (SegmentOf(run, i) is { } seg)
-                yield return (run.Splits[i].Id, seg);
+        if (!times.TryGetValue(_defs[index - 1].Id, out var prev)) return null;
+        return t >= prev ? t - prev : null;
     }
 }

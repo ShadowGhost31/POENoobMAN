@@ -22,45 +22,60 @@ public class ProgressTests
     }
 
     [Fact]
-    public void Mule_town_visit_does_not_complete_scion_step()
+    public void Area_name_far_ahead_is_not_unlocked_but_unique_id_is()
     {
+        var byName = TestData.Parse(TestData.MiniGuide.Replace("when: { area: \"2_6_2\" }", "when: { area: \"The Coast\" }"));
+        var e = new ProgressEngine(GuideView.Create(byName, null), new ProgressState());
+        e.OnAreaEntered(null, "The Coast");
+        // назва повторюється в A1 і A6: невідомий акт — не відкриваємо крок A6 з A1
+        Assert.DoesNotContain("a6", e.State.UnlockedSteps);
+
+        var e2 = Engine();
+        e2.OnAreaEntered("2_6_2", "The Coast");
+        // ID унікальний — гравець випереджає гайд, крок відкривається
+        Assert.Contains("a6", e2.State.UnlockedSteps);
+    }
+
+    [Fact]
+    public void Repeated_entry_into_same_zone_is_ignored()
+    {
+        // Реальний випадок з логу: "You have entered Lioneye's Watch" двічі поспіль при вході в гру
         var e = Engine();
-        Assert.Equal(["mule", "start"], CurrentIds(e));
-        Assert.Equal("l2", e.GetSteps().Blocker!.Id);
-
         Assert.Equal(["mule"], e.OnAreaEntered("1_1_town", "Lioneye's Watch"));
-        // крок мула закрився, а такий самий крок Скіона лишився, хоча мул досі в місті
+        Assert.Empty(e.OnAreaEntered("1_1_town", "Lioneye's Watch"));
         Assert.DoesNotContain("start", e.State.DoneSteps);
-        e.SetLevel(1);
-        Assert.DoesNotContain("start", e.State.DoneSteps);
-
+        e.OnAreaEntered("1_1_1", "The Twilight Strand");
         Assert.Equal(["start"], e.OnAreaEntered("1_1_town", "Lioneye's Watch"));
     }
 
     [Fact]
-    public void Steps_stop_at_first_unmet_condition_and_unlock_in_order()
+    public void Passive_point_from_log_closes_visible_quest_step_and_counts()
     {
         var e = Engine();
         e.SetStepDone("mule", true);
         e.SetStepDone("start", true);
-        Assert.Empty(CurrentIds(e));
-        Assert.Equal("l2", e.GetSteps().Blocker!.Id);
-
-        // вхід у зону з кроку попереду запам'ятовується, але список стоїть на рівні
-        e.OnAreaEntered("1_1_2", "The Coast");
-        Assert.Empty(CurrentIds(e));
-
         e.SetLevel(2);
-        Assert.Equal(["l2", "coast", "manual"], CurrentIds(e));
-        Assert.Equal("a6", e.GetSteps().Blocker!.Id);
+        e.OnAreaEntered("1_1_2", "The Coast");
+        Assert.Contains("coast", e.GetSteps().Current.Select(s => s.Id));
+        Assert.Contains("coast", e.OnPassivePointsReceived(1));
+        Assert.Equal(2, e.Points);   // рівень 2 → 1 + 1 квест
+
+        // /passives дає точне число і має пріоритет
+        e.OnQuestPointsReported(5);
+        Assert.Equal(6, e.Points);
+        e.OnPassivePointsReceived(2);
+        Assert.Equal(8, e.Points);
     }
 
     [Fact]
-    public void Area_far_ahead_is_not_unlocked()
+    public void Points_from_marked_steps_are_kept_when_log_starts_later()
     {
         var e = Engine();
-        e.OnAreaEntered("2_6_2", "The Coast");
-        Assert.DoesNotContain("a6", e.State.UnlockedSteps);
+        e.SetStepDone("coast", true);          // відмічено вручну до запуску застосунку
+        e.SetLevel(3);
+        Assert.Equal(3, e.Points);
+        e.OnPassivePointsReceived(1);          // наступний квест з логу
+        Assert.Equal(4, e.Points);
     }
 
     [Fact]
@@ -109,8 +124,8 @@ public class ProgressTests
         {
             var entry = repo.Find(id, null);
             Assert.NotNull(entry);
-            // 22 очки за квести кампанії
-            Assert.Equal(22, entry!.Guide!.Steps.Sum(s => s.Points));
+            // 23 очки за квести кампанії (An End to Hunger дає 2), без бандитів
+            Assert.Equal(23, entry!.Guide!.Steps.Sum(s => s.Points));
         }
     }
 

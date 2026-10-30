@@ -22,6 +22,7 @@ public sealed class StepItem(GuideStep step) : ObservableObject
     private bool _isDone;
     private bool _isCurrent;
     private bool _isBlocker;
+    private bool _isPassed;
 
     public string Id => step.Id;
     public string Act => $"A{step.Act}";
@@ -33,6 +34,9 @@ public sealed class StepItem(GuideStep step) : ObservableObject
     public bool IsDone { get => _isDone; set => Set(ref _isDone, value); }
     public bool IsCurrent { get => _isCurrent; set => Set(ref _isCurrent, value); }
     public bool IsBlocker { get => _isBlocker; set => Set(ref _isBlocker, value); }
+
+    /// <summary>Не виконано, але гравець уже залишив позаду (пропущена зона або минулий акт).</summary>
+    public bool IsPassed { get => _isPassed; set => Set(ref _isPassed, value); }
 }
 
 public sealed class NodeItem(TreeNode node) : ObservableObject

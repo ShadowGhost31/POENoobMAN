@@ -32,12 +32,36 @@ public class SplitTests
     }
 
     [Fact]
-    public void Later_trigger_skips_intermediate_splits()
+    public void Out_of_order_events_still_record_each_split()
+    {
+        // Кінець акту раніше за рівень 5: рівневий спліт не втрачається, а фіксується пізніше
+        var defs = TestData.Parse(TestData.MiniGuide.Replace("{ id: s_end, label: End, on: { area: \"1_2_town\" } }",
+            "{ id: s_mid, label: Mid, on: { area: \"1_2_town\" } }\n  - { id: s_end, label: End, on: { area: \"1_3_town\" } }")).Splits;
+        var t = new SplitTracker(defs, []);
+        t.Start(T0, "mini", "1.0", "Hero", NoOptions);
+        Assert.True(t.OnTrigger(new SplitTrigger(TriggerKind.Area, T0.AddSeconds(50), "1_2_town"), 3));
+        Assert.True(t.OnTrigger(new SplitTrigger(TriggerKind.Level, T0.AddSeconds(70), Level: 5), 5));
+        var rows = t.Rows();
+        Assert.Equal([null, 70.0, 50.0, null], rows.Select(r => r.Current));
+        Assert.Equal("Level 5", t.Snapshot(T0.AddSeconds(80), Comparison.PersonalBest).LastLabel);
+        Assert.Equal("Town", t.Snapshot(T0.AddSeconds(80), Comparison.PersonalBest).NextLabel);
+    }
+
+    [Fact]
+    public void Paused_time_is_not_counted()
     {
         var t = new SplitTracker(Defs, []);
         t.Start(T0, "mini", "1.0", "Hero", NoOptions);
-        Assert.True(t.OnTrigger(new SplitTrigger(TriggerKind.Area, T0.AddSeconds(50), "1_2_town"), 3));
-        Assert.Equal([null, null, 50.0], t.Current!.Splits.Select(s => s.Seconds));
+        t.AddPause(T0.AddSeconds(100), T0.AddSeconds(1100));        // гра закрита 1000 с (з логу)
+        t.BeginPause(T0.AddSeconds(1000));                          // вікно зникло всередині того самого проміжку
+        t.EndPause(T0.AddSeconds(1200));
+        t.OnTrigger(new SplitTrigger(TriggerKind.Step, T0.AddSeconds(1300), "start"), 2);
+        Assert.Equal(200, t.Current!.Splits[0].Seconds);             // 1300 − (100..1200 = 1100)
+        Assert.Equal(TimeSpan.FromSeconds(300), t.Snapshot(T0.AddSeconds(1400), Comparison.PersonalBest).Elapsed);
+        t.BeginPause(T0.AddSeconds(1400));
+        var s = t.Snapshot(T0.AddSeconds(5000), Comparison.PersonalBest);
+        Assert.True(s.Paused);
+        Assert.Equal(TimeSpan.FromSeconds(300), s.Elapsed);
     }
 
     [Fact]
@@ -74,13 +98,15 @@ public class SplitTests
     }
 
     [Fact]
-    public void Undo_removes_last_split_and_skipped_tail()
+    public void Undo_removes_last_split_and_unfinishes()
     {
         var t = new SplitTracker(Defs, []);
         t.Start(T0, "mini", "1.0", "Hero", NoOptions);
+        t.OnTrigger(new SplitTrigger(TriggerKind.Step, T0.AddSeconds(10), "start"), 1);
         t.OnTrigger(new SplitTrigger(TriggerKind.Area, T0.AddSeconds(50), "1_2_town"), 3);
+        Assert.True(t.Current!.Finished);
         Assert.True(t.Undo());
-        Assert.Empty(t.Current!.Splits);
+        Assert.Equal(["s_town"], t.Current.Splits.Select(s => s.Id));
         Assert.False(t.Current.Finished);
     }
 }

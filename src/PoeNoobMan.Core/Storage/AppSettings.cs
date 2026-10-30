@@ -53,6 +53,9 @@ public sealed class TimerSettings
     public bool ShowNext { get; set; } = true;
     public bool AutoStart { get; set; } = true;
     public bool SameOptionsOnly { get; set; } = true;
+
+    /// <summary>Не рахувати екрани завантаження (load-removed, як у спідранерів).</summary>
+    public bool RemoveLoads { get; set; } = true;
     public Comparison Comparison { get; set; } = Comparison.PersonalBest;
     public double X { get; set; } = 0.60;
     public double Y { get; set; } = 0.01;
