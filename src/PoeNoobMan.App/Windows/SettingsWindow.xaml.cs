@@ -26,17 +26,76 @@ public partial class SettingsWindow : Window
         _app = app;
         _edit = app.CloneSettings();
         InitializeComponent();
-        VersionText.Text = $"Версія: {UpdateService.CurrentVersion}";
+        var version = UpdateService.CurrentVersion;
+        VersionText.Text = $"Встановлена версія {version}";
+        VersionSmall.Text = $"версія {version}";
 
         app.GameChanged += _ => RenderGameStatus();
+        app.Changed += RenderLive;
         app.GuidesChanged += () => FillGuides(GuideBox.SelectedItem is GuideEntry g ? g.Id : _edit.GuideId);
         Loaded += (_, _) =>
         {
             FillFrom(_edit);
+            Nav.SelectedIndex = 0;
             RenderOverlayButton();
             RenderGameStatus();
+            RenderLive();
             if (_app.Settings.CheckUpdatesOnStart && !string.IsNullOrWhiteSpace(_app.Settings.UpdateSource)) _ = CheckUpdatesAsync(silent: true);
         };
+    }
+
+    private static readonly Brush Green = Frozen(0x6C, 0xCB, 0x5F);
+    private static readonly Brush Red = Frozen(0xFF, 0x99, 0xA4);
+    private static readonly Brush Grey = Frozen(0x9A, 0x9A, 0x9A);
+
+    private static Brush Frozen(byte r, byte g, byte b)
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+        brush.Freeze();
+        return brush;
+    }
+
+    // ---------------- Навігація ----------------
+
+    private void OnNavChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Nav.SelectedItem is not ListBoxItem { Tag: string page } item) return;
+        foreach (var panel in new FrameworkElement[] { PageHome, PageBuild, PageLook, PageTimer, PageKeys, PageUpdates })
+            panel.Visibility = panel.Name == "Page" + page ? Visibility.Visible : Visibility.Collapsed;
+        PageTitle.Text = ((item.Content as StackPanel)?.Children.OfType<TextBlock>().LastOrDefault())?.Text ?? "";
+    }
+
+    // ---------------- Огляд ----------------
+
+    private void RenderLive()
+    {
+        if (!IsLoaded) return;
+        if (_app.Engine is not { } engine || _app.View is not { } view)
+        {
+            LiveGuide.Text = "гайд не обрано";
+            LiveZone.Text = LiveLevel.Text = LivePoints.Text = "—";
+            LiveSteps.ItemsSource = null;
+            LiveNode.Text = "";
+            return;
+        }
+
+        var st = engine.State;
+        LiveGuide.Text = $"{view.Guide.Title} · v{view.Guide.Version}";
+        var act = Core.Log.AreaIds.ActOf(st.CurrentAreaId);
+        LiveZone.Text = st.CurrentAreaName is { } zone ? zone + (act is { } a ? $" · A{a}" : "") : "—";
+        LiveLevel.Text = st.Level.ToString();
+        LivePoints.Text = engine.Points.ToString();
+
+        var steps = engine.GetSteps();
+        var items = steps.Current.Take(_app.Settings.Overlay.MaxHints)
+            .Select(s => new HintItem { Act = $"A{s.Act}", Text = s.Text }).ToList();
+        if (steps.Blocker is { } b && items.Count < _app.Settings.Overlay.MaxHints)
+            items.Add(new HintItem { Act = $"A{b.Act}", Text = $"Далі ({b.When}): {b.Text}", IsWaiting = true });
+        LiveSteps.ItemsSource = items;
+
+        var nodes = engine.GetNodes();
+        LiveNode.Text = nodes.Now.FirstOrDefault() is { } now ? $"Нода — взяти зараз: {now.Name}"
+            : nodes.Next is { } next ? $"Наступна нода: {next.Name} — {next.DescribeCondition()}" : "";
     }
 
     // ---------------- Заповнення ----------------
@@ -113,6 +172,7 @@ public partial class SettingsWindow : Window
         VersionBox.SelectedItem = versions.FirstOrDefault(v => entry.Id == _edit.GuideId && v.Version == _edit.GuideVersion) ?? versions[0];
 
         var guide = ((GuideEntry)VersionBox.SelectedItem).Guide!;
+        GuideSource.Text = string.Join(" · ", new[] { guide.Patch is { } p ? $"патч {p}" : null, guide.Source }.OfType<string>());
         var selected = GuideView.Create(guide, _edit.OptionsFor(guide.Id)).Options;
         _options = guide.Options.Select(o => new OptionItem
         {
@@ -144,8 +204,8 @@ public partial class SettingsWindow : Window
             s.GuideOptions[ver.Id] = _options.ToDictionary(o => o.Id, o => o.Selected);
         }
 
-        s.Overlay.Scale = ScaleSlider.Value;
-        s.Overlay.Opacity = OpacitySlider.Value;
+        s.Overlay.Scale = Math.Round(ScaleSlider.Value / 0.05) * 0.05;
+        s.Overlay.Opacity = Math.Round(OpacitySlider.Value / 0.05) * 0.05;
         s.Overlay.MaxHints = (int)HintsSlider.Value;
         var errors = new List<string>();
         s.Overlay.HintsX = ParsePercent(HintsX.Text, s.Overlay.HintsX, "Підказки X", errors);
@@ -180,7 +240,7 @@ public partial class SettingsWindow : Window
     private void ShowStatus(string text, bool error)
     {
         SaveStatus.Text = text;
-        SaveStatus.Foreground = error ? new SolidColorBrush(Color.FromRgb(0xA3, 0x2D, 0x2D)) : new SolidColorBrush(Color.FromRgb(0x3B, 0x6D, 0x11));
+        SaveStatus.Foreground = error ? Red : Green;
     }
 
     private static string Percent(double fraction) => Math.Round(fraction * 100, 1).ToString(CultureInfo.InvariantCulture);
@@ -199,17 +259,24 @@ public partial class SettingsWindow : Window
     {
         var errors = _app.SetOverlayEnabled(!_app.OverlayEnabled);
         OverlayErrors.Text = errors.Count == 0 ? "" : string.Join("\n", errors);
+        if (errors.Count > 0) Nav.SelectedIndex = 0;
         RenderOverlayButton();
     }
 
-    private void RenderOverlayButton() =>
-        OverlayButton.Content = _app.OverlayEnabled ? "Вимкнути оверлей" : "Увімкнути оверлей і прив'язати до вікна PoE";
+    private void RenderOverlayButton()
+    {
+        var on = _app.OverlayEnabled;
+        OverlayButton.Content = on ? "Вимкнути оверлей" : "Увімкнути оверлей";
+        OverlayButton.ToolTip = on ? null : "Увімкнути оверлей і прив'язати до вікна PoE";
+        OverlayDot.Fill = on ? Green : Grey;
+        OverlayPill.Text = on ? "Оверлей увімкнено" : "Оверлей вимкнено";
+    }
 
     private void RenderGameStatus()
     {
         var found = _app.Game.Current.Found;
-        GameDot.Fill = found ? new SolidColorBrush(Color.FromRgb(0x63, 0x99, 0x22)) : new SolidColorBrush(Color.FromRgb(0xE2, 0x4B, 0x4A));
-        GameStatus.Text = found ? "Вікно гри знайдено" : "Вікно гри не знайдено";
+        GameDot.Fill = GameDotSide.Fill = found ? Green : Red;
+        GameStatus.Text = GameStatusSide.Text = found ? "Вікно гри знайдено" : "Вікно гри не знайдено";
     }
 
     // ---------------- Лог ----------------
@@ -219,7 +286,9 @@ public partial class SettingsWindow : Window
         var path = LogPath.Text.Trim();
         var ok = path.Length > 0 && File.Exists(path);
         LogStatus.Text = ok ? "Файл знайдено" : "Файл не знайдено";
-        LogStatus.Foreground = ok ? Brushes.DarkGreen : Brushes.Firebrick;
+        LogStatus.Foreground = ok ? Green : Red;
+        LogDot.Fill = ok ? Green : Red;
+        LogPill.Text = ok ? "Client.txt знайдено" : "Client.txt не знайдено";
     }
 
     private void OnBrowseLog(object sender, RoutedEventArgs e)

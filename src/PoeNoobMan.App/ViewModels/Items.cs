@@ -43,7 +43,7 @@ public sealed class NodeItem(TreeNode node) : ObservableObject
 
     public string Id => node.Id;
     public string Name => node.Refund ? $"Зняти: {node.Name}" : node.Name;
-    public string Condition => node.When?.ToString() ?? "вручну";
+    public string Condition => node.DescribeCondition();
 
     public bool IsTaken { get => _isTaken; set => Set(ref _isTaken, value); }
     public bool IsNow { get => _isNow; set => Set(ref _isNow, value); }

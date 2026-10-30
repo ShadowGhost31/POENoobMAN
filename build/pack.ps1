@@ -48,6 +48,7 @@ Write-Host "Пакування..."
 # --framework: Setup сам доставить .NET Desktop Runtime, якщо його немає
 vpk pack --packId PoeNoobMan --packVersion $Version --packDir $publishDir --mainExe PoeNoobMan.exe `
     --packTitle "PoE Noob Man" --packAuthors "PoE Noob Man" --framework net10.0-x64-desktop `
+    --icon (Join-Path $root "src/PoeNoobMan.App/Assets/icon.ico") `
     --runtime $Runtime --outputDir $releasesDir
 if ($LASTEXITCODE -ne 0) { throw "vpk pack завершився з помилкою" }
 

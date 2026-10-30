@@ -59,7 +59,7 @@ public partial class OverlayWindow : OverlayWindowBase
         {
             NodeLine.Inlines.Add(new Run("Нода: ") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayMuted") });
             NodeLine.Inlines.Add(new Run(next.Name) { Foreground = (System.Windows.Media.Brush)FindResource("OverlayText") });
-            NodeLine.Inlines.Add(new Run($" — {next.When}") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayDim") });
+            NodeLine.Inlines.Add(new Run($" — {next.DescribeCondition()}") { Foreground = (System.Windows.Media.Brush)FindResource("OverlayDim") });
         }
         NodeLine.Visibility = NodeLine.Inlines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }

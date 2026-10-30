@@ -76,7 +76,7 @@ public partial class DetailWindow : OverlayWindowBase
         }
         else
         {
-            NodeText.Text = nodes.Next is { } next ? $"Наступна нода: {next.Name} — {next.When}" : "Усі ноди взято";
+            NodeText.Text = nodes.Next is { } next ? $"Наступна нода: {next.Name} — {next.DescribeCondition()}" : "Усі ноди взято";
             TakeNodeButton.Visibility = Visibility.Collapsed;
         }
 

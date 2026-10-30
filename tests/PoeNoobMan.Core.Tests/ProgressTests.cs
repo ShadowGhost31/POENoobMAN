@@ -105,9 +105,24 @@ public class ProgressTests
         var repo = new GuideRepository(TestData.GuidesDir);
         repo.Reload();
         Assert.Empty(repo.Broken.SelectMany(b => b.Errors.Select(err => $"{Path.GetFileName(b.Path)}: {err}")));
-        var arma = repo.Find("arma-crema-scion", null);
-        Assert.NotNull(arma);
-        Assert.Equal(22, arma!.Guide!.Steps.Sum(s => s.Points));
+        foreach (var id in new[] { "arma-crema-scion", "rain-of-arrows-deadeye" })
+        {
+            var entry = repo.Find(id, null);
+            Assert.NotNull(entry);
+            // 22 очки за квести кампанії
+            Assert.Equal(22, entry!.Guide!.Steps.Sum(s => s.Points));
+        }
+    }
+
+    [Theory]
+    [InlineData("rain-of-arrows-deadeye", "ascendancy", "focal_point", "far_shot")]
+    [InlineData("rain-of-arrows-deadeye", "ascendancy", "occupying_force", "occupying_force")]
+    public void Guide_options_filter_tree(string guideId, string option, string choice, string expectedNode)
+    {
+        var repo = new GuideRepository(TestData.GuidesDir);
+        repo.Reload();
+        var view = GuideView.Create(repo.Find(guideId, null)!.Guide!, new Dictionary<string, string> { [option] = choice });
+        Assert.Contains(view.Nodes, n => n.Id == expectedNode);
     }
 
     [Fact]

@@ -44,6 +44,25 @@ public class LogTests
     public void Act_from_area_id(string id, int? act) => Assert.Equal(act, AreaIds.ActOf(id));
 
     [Fact]
+    public void Area_display_names()
+    {
+        Assert.Equal("The Tidal Island (A1)", AreaNames.Display("1_1_2a"));
+        Assert.Equal("Karui Shores (A11)", AreaNames.Display("2_11_endgame_town"));
+        Assert.Equal("Somewhere", AreaNames.Display("Somewhere"));
+    }
+
+    [Fact]
+    public void Every_area_in_bundled_guides_has_a_name()
+    {
+        var repo = new Guides.GuideRepository(TestData.GuidesDir);
+        repo.Reload();
+        var conditions = repo.Entries.SelectMany(e => e.Guide!.Steps.SelectMany(s => new[] { s.When, s.Done })
+            .Concat(e.Guide.Splits.Select(sp => sp.On)).Append(e.Guide.TimerStart));
+        var unknown = conditions.Select(c => c?.Area).OfType<string>().Where(a => AreaNames.NameOf(a) is null).Distinct();
+        Assert.Empty(unknown);
+    }
+
+    [Fact]
     public void Watcher_reads_only_new_complete_lines_and_handles_truncation()
     {
         var path = Path.Combine(Path.GetTempPath(), $"poe-log-{Guid.NewGuid():N}.txt");

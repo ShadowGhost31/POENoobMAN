@@ -9,7 +9,15 @@
     <StartupObject>PoeNoobMan.App.Program</StartupObject>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <!-- ThemeMode (Fluent-тема Windows 11) у WPF позначено як експериментальне -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\icon.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Main пишемо самі, щоб Velopack відпрацював до старту WPF -->

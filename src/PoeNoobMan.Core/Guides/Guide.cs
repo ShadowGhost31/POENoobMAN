@@ -49,7 +49,7 @@ public sealed class Condition
         var parts = new List<string>();
         if (Level is { } l) parts.Add($"з {l} рівня");
         if (Points is { } p) parts.Add($"при {p} очках");
-        if (Area is { } a) parts.Add($"у зоні {a}");
+        if (Area is { } a) parts.Add($"у зоні {Log.AreaNames.Display(a)}");
         if (Step is { } s) parts.Add($"після кроку {s}");
         return parts.Count == 0 ? "вручну" : string.Join(", ", parts);
     }
@@ -84,9 +84,15 @@ public sealed class TreeNode
     public string Name { get; set; } = "";
     public string? Note { get; set; }
     public Condition? When { get; set; }
+
+    /// <summary>Як показувати умову замість автоматичного тексту, наприклад "після Normal Lab".</summary>
+    public string? Hint { get; set; }
+
     public Dictionary<string, string>? If { get; set; }
     public bool Refund { get; set; }
     public bool Optional { get; set; }
+
+    public string DescribeCondition() => Hint ?? When?.ToString() ?? "вручну";
 }
 
 public sealed class SplitDef

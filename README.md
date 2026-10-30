@@ -2,7 +2,10 @@
 
 Оверлей-помічник для левелінгу в Path of Exile: підказки за гайдом білда поверх гри, наступна нода дерева і таймер забігу зі сплітами, як у спідранерів.
 
-Перший гайд — [Arma Crema Scion](https://maxroll.gg/poe/build-guides/arma-crema-scion-leveling-build-guide) (патч 3.29).
+Вбудовані гайди (патч 3.29):
+
+- [Arma Crema Scion](https://maxroll.gg/poe/build-guides/arma-crema-scion-leveling-build-guide). Опції: мул-Відьма, Shield Charge або Leap Slam, шлях в Act 6.
+- [Rain of Arrows Deadeye](https://maxroll.gg/poe/build-guides/rain-of-arrows-deadeye-leveling-build-guide). Опції: Rain of Arrows або Lightning Arrow, Manaforged і/або Ballista, асценд Occupying Force або Focal Point. Пасивне дерево в цьому гайді є лише картинкою, тому в застосунку відстежується тільки порядок асценду.
 
 ## Можливості
 
@@ -127,6 +130,7 @@ dotnet run --project src/PoeNoobMan.App
 - `src/PoeNoobMan.App` — WPF: вікна, Win32-оверлей, хоткеї, оновлення.
 - `guides/` — вбудовані гайди (копіюються в `Guides/` поруч з exe).
 - `build/pack.ps1` — збирання інсталятора.
+- `build/make-icon.ps1` — малює іконку (`src/PoeNoobMan.App/Assets/icon.ico`, `icon.png`).
 
 ## Реліз і оновлення
 
