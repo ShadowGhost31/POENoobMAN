@@ -1,0 +1,180 @@
+<Window x:Class="PoeNoobMan.App.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PoE Noob Man — налаштування" Width="600" Height="820" MinWidth="520" MinHeight="500"
+        WindowStartupLocation="CenterScreen" FontSize="13">
+    <DockPanel>
+        <!-- Нижня панель: збереження -->
+        <Border DockPanel.Dock="Bottom" BorderBrush="#DDD" BorderThickness="0,1,0,0" Padding="12,8" Background="#F7F7F5">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Зберегти" Padding="18,5" Click="OnSave" IsDefault="True" />
+                <TextBlock x:Name="SaveStatus" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
+            </DockPanel>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="12">
+
+                <!-- Оверлей -->
+                <GroupBox Header="Оверлей" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <Button x:Name="OverlayButton" Padding="10,6" Click="OnToggleOverlay" HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Ellipse x:Name="GameDot" Width="10" Height="10" Margin="0,0,6,0" />
+                            <TextBlock x:Name="GameStatus" />
+                        </StackPanel>
+                        <TextBlock x:Name="OverlayErrors" Foreground="#A32D2D" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Foreground="#5F5E5A" TextWrapping="Wrap" Margin="0,6,0,0" FontSize="12"
+                                   Text="Гра має бути у режимі Windowed або Windowed Fullscreen. Вікно налаштувань можна згорнути — оверлей працює, доки застосунок запущено." />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Лог і персонаж -->
+                <GroupBox Header="Client.txt і персонаж" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <TextBlock Text="Файл Client.txt" />
+                        <DockPanel Margin="0,2,0,0">
+                            <Button DockPanel.Dock="Right" Content="Знайти" Margin="4,0,0,0" Padding="8,2" Click="OnDetectLog" />
+                            <Button DockPanel.Dock="Right" Content="Огляд…" Margin="4,0,0,0" Padding="8,2" Click="OnBrowseLog" />
+                            <TextBox x:Name="LogPath" />
+                        </DockPanel>
+                        <TextBlock x:Name="LogStatus" FontSize="12" Margin="0,2,0,0" />
+                        <TextBlock Text="Ім'я персонажа (за ним фільтруються рядки про рівень)" Margin="0,8,0,0" />
+                        <ComboBox x:Name="Character" IsEditable="True" Margin="0,2,0,0" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Білд -->
+                <GroupBox Header="Білд і гайд" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="140" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Білд" />
+                                <ComboBox x:Name="GuideBox" DisplayMemberPath="Title" SelectionChanged="OnGuideChanged" Margin="0,2,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Версія гайда" />
+                                <ComboBox x:Name="VersionBox" DisplayMemberPath="Version" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl x:Name="OptionsList" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,3">
+                                        <TextBlock Text="{Binding Label}" Width="210" VerticalAlignment="Center" />
+                                        <ComboBox ItemsSource="{Binding Choices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding Selected}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="GuideErrors" Foreground="#A32D2D" TextWrapping="Wrap" FontSize="12" Margin="0,6,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Папка гайдів" Padding="8,2" Click="OnOpenGuides" />
+                            <Button Content="Папка даних" Padding="8,2" Margin="6,0,0,0" Click="OnOpenData" />
+                        </StackPanel>
+                        <TextBlock Foreground="#5F5E5A" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                                   Text="Новий YAML-файл у папці гайдів одразу з'являється тут як нова версія." />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Вигляд -->
+                <GroupBox Header="Вигляд оверлею" Style="{StaticResource SettingsGroup}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="210" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="50" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Масштаб" VerticalAlignment="Center" />
+                        <Slider x:Name="ScaleSlider" Grid.Column="1" Minimum="0.75" Maximum="1.5" TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="0,4" />
+                        <TextBlock Grid.Column="2" Text="{Binding Value, ElementName=ScaleSlider, StringFormat={}{0:P0}}" VerticalAlignment="Center" TextAlignment="Right" />
+
+                        <TextBlock Grid.Row="1" Text="Непрозорість фону" VerticalAlignment="Center" />
+                        <Slider x:Name="OpacitySlider" Grid.Row="1" Grid.Column="1" Minimum="0.2" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="0,4" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Value, ElementName=OpacitySlider, StringFormat={}{0:P0}}" VerticalAlignment="Center" TextAlignment="Right" />
+
+                        <TextBlock Grid.Row="2" Text="Підказок одночасно" VerticalAlignment="Center" />
+                        <Slider x:Name="HintsSlider" Grid.Row="2" Grid.Column="1" Minimum="1" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,4" />
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Value, ElementName=HintsSlider}" VerticalAlignment="Center" TextAlignment="Right" />
+
+                        <TextBlock Grid.Row="3" Text="Підказки: X / Y, % вікна гри" VerticalAlignment="Center" />
+                        <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4">
+                            <TextBox x:Name="HintsX" Width="60" />
+                            <TextBox x:Name="HintsY" Width="60" Margin="6,0,0,0" />
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="4" Text="Таймер: X / Y, % вікна гри" VerticalAlignment="Center" />
+                        <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4">
+                            <TextBox x:Name="TimerX" Width="60" />
+                            <TextBox x:Name="TimerY" Width="60" Margin="6,0,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Таймер -->
+                <GroupBox Header="Таймер забігу" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <CheckBox x:Name="TimerEnabled" Content="Показувати таймер" />
+                        <CheckBox x:Name="TimerAutoStart" Content="Стартувати автоматично (вхід у Twilight Strand, Act 1)" Margin="0,4,0,0" />
+                        <CheckBox x:Name="TimerShowNext" Content="Показувати рядок «Далі»" Margin="0,4,0,0" />
+                        <CheckBox x:Name="TimerSameOptions" Content="Порівнювати лише із забігами з тими ж опціями білда" Margin="0,4,0,0" />
+                        <DockPanel Margin="0,6,0,0">
+                            <TextBlock Text="Порівнювати з" Width="210" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ComparisonBox" SelectedValuePath="Tag">
+                                <ComboBoxItem Content="Особистий рекорд (PB)" Tag="PersonalBest" />
+                                <ComboBoxItem Content="Минулий забіг" Tag="LastRun" />
+                                <ComboBoxItem Content="Сума найкращих сегментів" Tag="SumOfBest" />
+                            </ComboBox>
+                        </DockPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Хоткеї -->
+                <GroupBox Header="Гарячі клавіші" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <ItemsControl x:Name="HotkeysList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,2">
+                                        <TextBlock Text="{Binding Label}" Width="210" VerticalAlignment="Center" />
+                                        <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" Width="160" HorizontalAlignment="Left"
+                                                 PreviewKeyDown="OnHotkeyKeyDown" GotKeyboardFocus="OnHotkeyFocus" LostKeyboardFocus="OnHotkeyBlur"
+                                                 ToolTip="Клацніть і натисніть комбінацію. Backspace — очистити." />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Foreground="#5F5E5A" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                                   Text="Хоткеї працюють лише з увімкненим оверлеєм. Клавіші, зайняті іншою програмою, будуть показані при збереженні." />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Оновлення -->
+                <GroupBox Header="Оновлення" Style="{StaticResource SettingsGroup}">
+                    <StackPanel>
+                        <TextBlock x:Name="VersionText" />
+                        <TextBlock Text="Джерело оновлень (GitHub-репозиторій, URL або папка з релізами)" Margin="0,6,0,0" />
+                        <TextBox x:Name="UpdateSource" Margin="0,2,0,0" />
+                        <CheckBox x:Name="CheckUpdatesOnStart" Content="Перевіряти при запуску" Margin="0,4,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button x:Name="UpdateButton" Content="Перевірити оновлення" Padding="8,2" Click="OnUpdate" />
+                            <TextBlock x:Name="UpdateStatus" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

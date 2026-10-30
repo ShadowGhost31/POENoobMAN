@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PoeNoobMan.App/PoeNoobMan.App.csproj" />
+    <Project Path="src/PoeNoobMan.Core/PoeNoobMan.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PoeNoobMan.Core.Tests/PoeNoobMan.Core.Tests.csproj" />
+  </Folder>
+</Solution>

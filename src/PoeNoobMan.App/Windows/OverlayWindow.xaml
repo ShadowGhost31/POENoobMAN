@@ -1,0 +1,40 @@
+<local:OverlayWindowBase x:Class="PoeNoobMan.App.Windows.OverlayWindow"
+                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="clr-namespace:PoeNoobMan.App.Windows"
+                         Title="PoE Noob Man — підказки">
+    <Border x:Name="Root" CornerRadius="6" Padding="10,6,10,8" BorderBrush="{StaticResource OverlayBorder}" BorderThickness="0.5">
+        <Border.LayoutTransform>
+            <ScaleTransform x:Name="Scale" ScaleX="1" ScaleY="1" />
+        </Border.LayoutTransform>
+        <StackPanel MaxWidth="470" MinWidth="240">
+            <TextBlock x:Name="Header" Foreground="{StaticResource OverlayMuted}" FontSize="12" Margin="0,0,0,4" />
+            <ItemsControl x:Name="Hints">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="0,2">
+                            <Border DockPanel.Dock="Left" Background="{StaticResource ChipBg}" CornerRadius="3" Padding="4,0" Margin="0,1,6,0" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding Act}" Foreground="{StaticResource OverlayMuted}" FontSize="11" />
+                            </Border>
+                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="13">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource OverlayText}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsWaiting}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource OverlayDim}" />
+                                                <Setter Property="FontStyle" Value="Italic" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock x:Name="NodeLine" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,0" />
+            <TextBlock x:Name="FlashLine" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0" Foreground="{StaticResource OverlayAccent}" />
+        </StackPanel>
+    </Border>
+</local:OverlayWindowBase>
